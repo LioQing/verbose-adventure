@@ -1,23 +1,23 @@
-# Python Template
+# Verbose Adventure
 
-This is a template for Python projects.
+This is demo project for GPT interactive story generation.
 
 ## Environment Setup
 
 ### Python
 
-We use Python \<version>, so make sure you have that installed.
+We use Python 3.11, so make sure you have that installed.
 
 You could use [pyenv](https://github.com/pyenv/pyenv) or [pyenv-win](https://github.com/pyenv-win/pyenv-win) (Windows is not recommended to install pyenv because it does not get native support) to manage your Python versions.
 
 Install the Python version you want to use.
 ```bash
-pyenv install <version>
+pyenv install 3.11
 ```
 
 Specify the version for this directory.
 ```bash
-pyenv local <version>
+pyenv local 3.11
 ```
 
 To check your Python version, run `python --version` in your terminal.
@@ -116,7 +116,7 @@ Then replace the content with the following:
 
 First clone the repository.
 ```bash
-git clone git@github.com:<username>/<repository>.git
+git clone git@github.com:LioQing/verbose-adventure.git
 ```
 
 **Important**: You may need to setup SSH keys for your GitHub account. See [this guide](https://help.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh) for more information.
