@@ -1,8 +1,8 @@
 from django.apps import AppConfig
 
 
-class JwtAuthConfig(AppConfig):
-    """JWT Auth config"""
+class RestAuthConfig(AppConfig):
+    """REST Auth config"""
 
     default_auto_field = "django.db.models.BigAutoField"
-    name = "jwt_auth"
+    name = "rest_auth"

@@ -16,17 +16,41 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from rest_framework import routers
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+from rest_framework import permissions
 
-from core import views as core_views
+import core.urls
+import rest_auth.urls
 
-router = routers.SimpleRouter()
-# TODO: Add yasg for api documentation
-# router.register(r"ping", core_views.PingPongView, basename="ping")
-router.register(r"user", core_views.UserView)
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Verbose Adventure API",
+        default_version="v1",
+        description="API of the Verbose Adventure project",
+        license=openapi.License(name="MIT License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
+    path(
+        "swagger<format>/",
+        schema_view.without_ui(cache_timeout=0),
+        name="schema-json",
+    ),
+    path(
+        "swagger/",
+        schema_view.with_ui("swagger", cache_timeout=0),
+        name="schema-swagger-ui",
+    ),
+    path(
+        "redoc/",
+        schema_view.with_ui("redoc", cache_timeout=0),
+        name="schema-redoc",
+    ),
     path("admin/", admin.site.urls),
-    path("auth/", include("jwt_auth.urls")),
-    path("api/", include(router.urls)),
+    path("auth/", include(rest_auth.urls)),
+    path("api/", include(core.urls)),
 ]

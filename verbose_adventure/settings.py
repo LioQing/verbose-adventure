@@ -42,10 +42,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "drf_yasg",
     "corsheaders",
     "rest_framework",
     "core.apps.CoreConfig",
-    "jwt_auth.apps.JwtAuthConfig",
+    "rest_auth.apps.RestAuthConfig",
 ]
 
 MIDDLEWARE = [
@@ -155,4 +156,12 @@ REST_FRAMEWORK = {
 # JWT settings
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+}
+
+# YASG settings
+SWAGGER_SETTINGS = {
+    "USE_SESSION_AUTH": False,
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"}
+    },
 }

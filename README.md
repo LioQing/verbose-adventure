@@ -6,6 +6,14 @@ This is demo project for GPT interactive story generation.
 
 ```mermaid
 erDiagram
+    User {
+        _Inherited _inherited_attr
+        Boolean is_whitelisted
+        Text system_message
+        Text summary_message
+        PositiveInteger iteration
+    }
+
     Message {
         Datetime timestamp PK "Partial PK"
         ManyToOne(User) users FK,PK "Partial PK"

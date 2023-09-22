@@ -6,7 +6,7 @@ from .models import User
 class PingPongSerializer(serializers.Serializer):
     """Serializer for the PingPongView"""
 
-    pass
+    ping = serializers.CharField(max_length=4)
 
 
 class UserSerializer(serializers.ModelSerializer):
