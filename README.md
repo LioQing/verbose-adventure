@@ -2,17 +2,65 @@
 
 This is demo project for GPT interactive story generation.
 
+## System Flow Diagram
+
+```mermaid
+flowchart LR
+    start([Start]) --> startStory
+
+    subgraph "Initialize"
+        direction TB
+        startStory[Start story w/ API]
+        initSys[(System message\nStart message)] --> startStory
+        startStory --> saveMessage1[(Chatcmpl & Choice\nMessage)]
+    end
+
+    startStory --> stopQ{Stop?}
+    stopQ -- No --> userInput[/User input/]
+
+    subgraph "User response"
+        userInput --> saveMessage2[(Message)]
+    end
+
+    stopQ -- Yes --> stop([Stop])
+
+    subgraph "API response"
+        direction LR
+        history[(Message history\nSummary message\nSystem message)]
+        saveMessage3[(Chatcmpl & Choice\nMessage)]
+        api2[Get response w/ API]
+        build[Build message]
+    end
+
+    history --> api2
+    build --> api2
+    userInput --> build
+    api2 --> saveMessage3
+    api2 --> summarizeQ
+
+    subgraph "Summarize"
+        direction LR
+        summarizeDB[(Message history)]
+        summarizeQ{Summarize?}
+        summarize[Summarize /w API]
+        saveSummary[(Chatcmpl & Choice\nSummary message)]
+    end
+
+    summarize --> stopQ
+    summarizeDB --> summarize
+    summarize --> saveSummary
+    summarizeQ --> summarize
+```
+
 ## Entity Relationship Diagram
 
 ```mermaid
 erDiagram
     User {
-        _Inherited _inherited_attr
         Boolean is_whitelisted
     }
 
     Adventure {
-        _Inherited id PK "Default PK"
         ManyToOne(User) user FK
         Text system_message
         Text summary_message "Nullable"
@@ -30,8 +78,9 @@ erDiagram
     Chatcmpl {
         Text id PK
         ManyToOne(User) users FK
+        ManyToMany(Message) messages FK
         Text object_name
-        Datetime created
+        Datetime created_at
         Text model
     }
 
@@ -50,7 +99,9 @@ erDiagram
 
     Adventure ||--o{ Chatcmpl : calls
 
-    Chatcmpl ||--|{ Choice : contains
+    Chatcmpl }|--o{ Message : takes
+
+    Chatcmpl ||--|{ Choice : responds
 
     Message |o--o| Choice : chooses
 ```
