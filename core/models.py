@@ -6,9 +6,6 @@ class User(AbstractUser):
     """User model"""
 
     is_whitelisted = models.BooleanField(default=False)
-    system_message = models.TextField(null=True, blank=True)
-    summary_message = models.TextField(null=True, blank=True)
-    iteration = models.PositiveIntegerField(default=0)
 
     class Meta(AbstractUser.Meta):
         swappable = "AUTH_USER_MODEL"
@@ -23,11 +20,20 @@ class Role(models.TextChoices):
     FUNCTION = "F", "function"
 
 
+class Adventure(models.Model):
+    """Adventure model"""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    system_message = models.TextField(null=True, blank=True)
+    summary_message = models.TextField(null=True, blank=True)
+    iteration = models.PositiveIntegerField(default=0)
+
+
 class Message(models.Model):
     """Message model"""
 
     timestamp = models.DateTimeField(auto_now_add=True)
-    users = models.ForeignKey(User, on_delete=models.CASCADE)
+    users = models.ForeignKey(Adventure, on_delete=models.CASCADE)
     role = models.CharField(max_length=1, choices=Role.choices)
     text = models.TextField()
     name = models.TextField(null=True, blank=True)
@@ -37,7 +43,7 @@ class Chatcmpl(models.Model):
     """Chat completion model"""
 
     id = models.TextField(primary_key=True, unique=True)
-    users = models.ForeignKey(User, on_delete=models.CASCADE)
+    users = models.ForeignKey(Adventure, on_delete=models.CASCADE)
     object_name = models.TextField()
     created_at = models.DateTimeField()
     model = models.TextField()

@@ -9,8 +9,13 @@ erDiagram
     User {
         _Inherited _inherited_attr
         Boolean is_whitelisted
+    }
+
+    Adventure {
+        _Inherited id PK "Default PK"
+        ManyToOne(User) user FK
         Text system_message
-        Text summary_message
+        Text summary_message "Nullable"
         PositiveInteger iteration
     }
 
@@ -39,9 +44,11 @@ erDiagram
         PositiveInteger prompt_tokens
     }
 
-    User ||--o{ Message : has
+    User ||--o{ Adventure : plays
 
-    User ||--o{ Chatcmpl : calls
+    Adventure ||--o{ Message : has
+
+    Adventure ||--o{ Chatcmpl : calls
 
     Chatcmpl ||--|{ Choice : contains
 

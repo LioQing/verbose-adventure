@@ -1,6 +1,12 @@
 import logging
 
-from .convo import Convo
+from config.adventure import adventure_config
+
+from .convo import Convo, ConvoStateCoupler
+
+
+class AdventureConvoStateCoupler(ConvoStateCoupler):
+    """Coupler for Adventure Convo"""
 
 
 class Adventure:
@@ -12,15 +18,10 @@ class Adventure:
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(adventure_config.log_level)
 
         self.convo = Convo()
-        self.system_message = (
-            "You are a DnD Dungeon Master. You are creating a new adventure"
-            " for your user. You either respond to the user's action or create"
-            " a new event or action for user if the user is not sure what to"
-            " do next.  Give only 2 to 3 sentences, do not list actions for"
-            " user to choose from."
-        )
+        self.system_message = adventure_config.system_message
 
         self.logger.info("Adventure created")
 

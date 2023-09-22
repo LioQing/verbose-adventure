@@ -8,6 +8,8 @@ from rest_auth.permissions import IsWhitelisted
 from .models import User
 from .serializers import PingPongSerializer, UserSerializer
 
+# ---------------- User ----------------
+
 
 class UserView(
     generics.CreateAPIView,
@@ -35,6 +37,9 @@ class ModifyUserView(
     permission_classes = [permissions.IsAdminUser]
 
 
+# ---------------- Ping ----------------
+
+
 class PingPongView(views.APIView):
     """View for checking if the server is running"""
 
@@ -51,3 +56,6 @@ class PingPongView(views.APIView):
         serializer = self.serializer_class(data={"ping": "pong"})
         serializer.is_valid(raise_exception=True)
         return response.Response(serializer.data)
+
+
+# ---------------- Convo ----------------

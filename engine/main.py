@@ -1,7 +1,8 @@
 import logging
 
+from config.main import main_config
+
 from . import adventure
-from .config import main_config
 
 if main_config.enable_log:
     logging.basicConfig()

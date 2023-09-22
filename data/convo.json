@@ -1828,3 +1828,88 @@ role=<Role.SYSTEM: 'system'> content='You are an assistant to summarize the JSON
     "total_tokens": 571
   }
 }
+{
+  "id": "chatcmpl-81WMfXse7FSmMCyK70DUEgAJvpWjk",
+  "object": "chat.completion",
+  "created": 1695373429,
+  "model": "gpt-35-turbo",
+  "choices": [
+    {
+      "index": 0,
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "Greetings! You find yourself in a dense forest, surrounded by towering trees. The air is filled with a mysterious energy. What would you like to do?"
+      }
+    }
+  ],
+  "usage": {
+    "completion_tokens": 31,
+    "prompt_tokens": 79,
+    "total_tokens": 110
+  }
+}
+{
+  "id": "chatcmpl-81WMxizYGv1Q75P0Lo6HoVVitbf5I",
+  "object": "chat.completion",
+  "created": 1695373447,
+  "model": "gpt-35-turbo",
+  "choices": [
+    {
+      "index": 0,
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "You close your eyes and focus your senses, reaching out to perceive the source of the mysterious energy. As you delve deeper into your concentration, you feel a faint pull towards the northeast, deeper into the heart of the forest. It seems like the energy is emanating from that direction. What do you do next?"
+      }
+    }
+  ],
+  "usage": {
+    "completion_tokens": 63,
+    "prompt_tokens": 125,
+    "total_tokens": 188
+  }
+}
+role=<Role.SYSTEM: 'system'> content='You are an assistant to summarize the JSON list of messages given by the user. Make sure to mention any factual information and name in the story. Each sentence consists of about 10 to 30 words. Describe the environment and circumstances of the story using 3 sentences.' name=None
+{
+  "id": "chatcmpl-81WNanXnt0m5RWaIEhEzt9Lgxdyty",
+  "object": "chat.completion",
+  "created": 1695373486,
+  "model": "gpt-35-turbo",
+  "choices": [
+    {
+      "index": 0,
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "You find yourself in a dense forest, surrounded by towering trees. The air is filled with a mysterious energy. You sense the energy is coming from the northeast. Time to start going in that direction!"
+      }
+    }
+  ],
+  "usage": {
+    "completion_tokens": 40,
+    "prompt_tokens": 260,
+    "total_tokens": 300
+  }
+}
+{
+  "id": "chatcmpl-81WNZtphkUhCP9hJk7QWR42cg6p8P",
+  "object": "chat.completion",
+  "created": 1695373485,
+  "model": "gpt-35-turbo",
+  "choices": [
+    {
+      "index": 0,
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "You begin your journey towards the northeast, following the pull of the mysterious energy. As you navigate through the dense forest, you notice the sounds of wildlife growing quieter, giving way to an eerie silence. Eventually, you stumble upon a narrow, overgrown path that seems to lead deeper into the woods. What do you do?"
+      }
+    }
+  ],
+  "usage": {
+    "completion_tokens": 65,
+    "prompt_tokens": 201,
+    "total_tokens": 266
+  }
+}

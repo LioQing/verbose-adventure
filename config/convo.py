@@ -2,29 +2,6 @@ from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
-class MainConfig(BaseSettings):
-    """Main configurations"""
-
-    enable_log: bool = Field(False)
-
-    class Config:
-        env_prefix = "MAIN_"
-        env_file = ".env"
-
-
-class OpenAIConfig(BaseSettings):
-    """Configurations for OpenAI API"""
-
-    api_type: str = Field("azure")
-    version: str = Field("2023-05-15")
-    key: str
-    url: str
-
-    class Config:
-        env_prefix = "OPENAI_"
-        env_file = ".env"
-
-
 class ConvoConfig(BaseSettings):
     """Configurations for Convo"""
 
@@ -72,6 +49,4 @@ class ConvoConfig(BaseSettings):
         env_file = ".env"
 
 
-main_config = MainConfig()
-open_ai_config = OpenAIConfig()
 convo_config = ConvoConfig()

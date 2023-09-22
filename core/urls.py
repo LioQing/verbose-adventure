@@ -5,7 +5,7 @@ from . import views
 
 router = routers.SimpleRouter()
 router.register(r"user", views.UserView)
-router.register(r"modify-user", views.ModifyUserView)
+router.register(r"user/modify", views.ModifyUserView)
 
 urlpatterns = [
     *router.urls,
