@@ -2,6 +2,44 @@
 
 This is demo project for GPT interactive story generation.
 
+## Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    Message {
+        Datetime timestamp PK
+        User user FK
+        Role role
+        Text content
+        Text name "Nullable"
+    }
+
+    Chatcmpl {
+        Text id PK
+        User user FK
+        Text object
+        Datetime created
+        Text model
+    }
+
+    Choice {
+        Text chatcmpl_id PK "Partial PK"
+        Integer index PK "Partial PK"
+        Message message FK
+        Text finish_reason
+        Integer completion_tokens
+        Integer prompt_tokens
+    }
+
+    User ||--o{ Message : has
+
+    User ||--o{ Chatcmpl : call
+
+    Chatcmpl ||--|{ Choice : contains
+
+    Message ||--o| Choice : choice
+```
+
 ## Environment Setup
 
 ### Python
