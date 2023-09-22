@@ -15,8 +15,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
+from rest_framework import routers
+
+from core import views as core_views
+
+router = routers.SimpleRouter()
+# TODO: Add yasg for api documentation
+# router.register(r"ping", core_views.PingPongView, basename="ping")
+router.register(r"user", core_views.UserView)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
+    path("auth/", include("jwt_auth.urls")),
+    path("api/", include(router.urls)),
 ]

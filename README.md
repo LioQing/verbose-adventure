@@ -7,8 +7,8 @@ This is demo project for GPT interactive story generation.
 ```mermaid
 erDiagram
     Message {
-        Datetime timestamp PK
-        User user FK
+        Datetime timestamp PK "Partial PK"
+        ManyToOne(User) users FK,PK "Partial PK"
         Role role
         Text content
         Text name "Nullable"
@@ -16,28 +16,28 @@ erDiagram
 
     Chatcmpl {
         Text id PK
-        User user FK
-        Text object
+        ManyToOne(User) users FK
+        Text object_name
         Datetime created
         Text model
     }
 
     Choice {
-        Text chatcmpl_id PK "Partial PK"
-        Integer index PK "Partial PK"
-        Message message FK
+        Foreign(Chatcmpl) chatcmpl FK,PK "Partial PK"
+        PositiveInteger index PK "Partial PK"
+        OneToOne(Message) message FK "Nullable"
         Text finish_reason
-        Integer completion_tokens
-        Integer prompt_tokens
+        PositiveInteger completion_tokens
+        PositiveInteger prompt_tokens
     }
 
     User ||--o{ Message : has
 
-    User ||--o{ Chatcmpl : call
+    User ||--o{ Chatcmpl : calls
 
     Chatcmpl ||--|{ Choice : contains
 
-    Message ||--o| Choice : choice
+    Message |o--o| Choice : chooses
 ```
 
 ## Environment Setup
