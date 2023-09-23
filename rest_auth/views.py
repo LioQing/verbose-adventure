@@ -3,7 +3,8 @@ from rest_framework import parsers, permissions, status
 from rest_framework_simplejwt import views as jwt_views
 
 from .serializers import (
-    TokenObtainPairResponseSerializer, TokenObtainPairSerializer
+    TokenObtainPairResponseSerializer,
+    TokenObtainPairSerializer,
 )
 
 

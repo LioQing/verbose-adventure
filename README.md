@@ -4,7 +4,8 @@ This is demo project for GPT interactive story generation.
 
 ## System Flow Diagram
 
-```mermaidflowchart LR
+```mermaid
+flowchart LR
     subgraph "Initialize story (init_story)"
         startStory[Start story w/ API]
         initSys[(System message\nStart message)]

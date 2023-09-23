@@ -1,6 +1,12 @@
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import (
-    generics, parsers, permissions, response, status, views, viewsets
+    generics,
+    parsers,
+    permissions,
+    response,
+    status,
+    views,
+    viewsets,
 )
 
 from rest_auth.permissions import IsWhitelisted
