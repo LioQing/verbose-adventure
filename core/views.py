@@ -45,3 +45,14 @@ class AdventureView(
     queryset = models.Adventure.objects.all()
     serializer_class = serializers.AdventureSerializer
     permission_classes = [IsWhitelisted]
+
+
+class AdventureStartView(views.APIView):
+    """View for initializing the story"""
+
+    serializer_class = serializers.AdventureStartSerializer
+    permission_classes = [IsWhitelisted]
+
+    def get(self, request):
+        """Return first API response of the story"""
+        pass

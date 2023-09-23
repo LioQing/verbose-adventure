@@ -72,36 +72,43 @@ erDiagram
 
     Adventure {
         ManyToOne(User) user FK
+        OneToOne(Summary) summary FK
         Text system_message
         Text start_message
-        Text summary_message "Nullable"
         PositiveInteger iteration
-    }
-
-    Message {
-        Datetime timestamp PK "Partial PK"
-        ManyToOne(User) users FK,PK "Partial PK"
-        Role role
-        Text content
-        Text name "Nullable"
     }
 
     Chatcmpl {
         Text id PK
-        ManyToOne(User) users FK
+        ManyToOne(Adventure) adventure FK
+        ManyToOne(Summary) summary FK "Nullable"
         ManyToMany(Message) messages FK
+        ChatcmplKind kind "Message, Summary"
         Text object_name
         Datetime created_at
         Text model
+        PositiveInteger completion_tokens
+        PositiveInteger prompt_tokens
+    }
+
+    Summary {
+        Text summary
+    }
+
+    Message {
+        Datetime timestamp PK "Partial PK"
+        ManyToOne(Adventure) adventure FK,PK "Partial PK"
+        Role role "System, Assistant, User, Function"
+        Text content
+        Text name "Nullable"
     }
 
     Choice {
-        Foreign(Chatcmpl) chatcmpl FK,PK "Partial PK"
+        ManyToOne(Chatcmpl) chatcmpls FK,PK "Partial PK"
         PositiveInteger index PK "Partial PK"
         OneToOne(Message) message FK "Nullable"
+        OneToOne(Summary) summary FK "Nullable"
         Text finish_reason
-        PositiveInteger completion_tokens
-        PositiveInteger prompt_tokens
     }
 
     User ||--o{ Adventure : plays
@@ -113,6 +120,12 @@ erDiagram
     Chatcmpl }|--o{ Message : takes
 
     Chatcmpl ||--|{ Choice : responds
+
+        Summary |o--o| Adventure : current
+
+    Summary |o--o{ Chatcmpl : takes
+
+    Summary ||--o| Choice : chooses
 
     Message |o--o| Choice : chooses
 ```
@@ -180,6 +193,23 @@ When you want to deactivate the virtual environment.
 ```bash
 deactivate
 ```
+
+
+### Environment Variables
+
+Make a copy of the `.env.example` file and rename it to `.env`.
+```bash
+cp .env.example .env
+```
+
+Fill in the environment variables in the `.env` file.
+
+
+### Database
+
+Use [PostgreSQL](https://www.postgresql.org) as the database.
+
+Change the settings according to the `.env` file.
 
 ### Lint and Pre-commit
 

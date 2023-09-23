@@ -15,7 +15,7 @@ openai.api_type = open_ai_config.api_type
 openai.api_version = open_ai_config.version
 
 
-class ConvoDataCoupler(abc.ABC):
+class BaseConvoCoupler(abc.ABC):
     """Abstract class for Convo to communicate with its data state"""
 
     @abc.abstractclassmethod
@@ -127,9 +127,9 @@ class Convo:
     """Conversation class for OpenAI API"""
 
     logger: logging.Logger
-    coupler: ConvoDataCoupler
+    coupler: BaseConvoCoupler
 
-    def __init__(self, coupler: ConvoDataCoupler):
+    def __init__(self, coupler: BaseConvoCoupler):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(convo_config.log_level)
 

@@ -23,3 +23,9 @@ class AdventureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Adventure
         fields = "__all__"
+
+
+class AdventureStartSerializer(serializers.Serializer):
+    """Serializer for the AdventureStartView"""
+
+    response = serializers.CharField()

@@ -1,12 +1,13 @@
 import logging
+import traceback
 from typing import List, Optional, Tuple
 
 from config.adventure import adventure_config
 
-from .convo import Chatcmpl, Convo, ConvoDataCoupler, Message, Role
+from .convo import BaseConvoCoupler, Chatcmpl, Convo, Message, Role
 
 
-class AdventureConvoCoupler(ConvoDataCoupler):
+class ConvoCoupler(BaseConvoCoupler):
     """Coupler for Adventure Convo"""
 
     logger: logging.Logger
@@ -22,7 +23,7 @@ class AdventureConvoCoupler(ConvoDataCoupler):
         self.chatcmpl = []
         self.summary = None
 
-        self.logger.info("AdventureConvoCoupler created")
+        self.logger.info("ConvoCoupler created")
 
     @property
     def token_used(self) -> int:
@@ -177,14 +178,14 @@ class Adventure:
     """The main adventure class"""
 
     logger: logging.Logger
-    convo_coupler: AdventureConvoCoupler
+    convo_coupler: ConvoCoupler
     convo: Convo
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(adventure_config.log_level)
 
-        self.convo_coupler = AdventureConvoCoupler()
+        self.convo_coupler = ConvoCoupler()
         self.convo = Convo(self.convo_coupler)
 
         self.logger.info("Adventure created")
@@ -214,6 +215,7 @@ class Adventure:
 
                 self.print_assistant_response(api_response)
             except Exception as e:
+                print(traceback.format_exc())
                 print(f"Error: {e}")
 
         self.logger.info("Adventure ended")
