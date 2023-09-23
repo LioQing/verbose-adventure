@@ -4,8 +4,7 @@ This is demo project for GPT interactive story generation.
 
 ## System Flow Diagram
 
-```mermaid
-flowchart LR
+```mermaidflowchart LR
     subgraph "Initialize story (init_story)"
         startStory[Start story w/ API]
         initSys[(System message\nStart message)]
@@ -26,36 +25,40 @@ flowchart LR
     end
 
     subgraph "Summarize (summarize)"
-        summarizeDB[(Message history)]
+        summarizeDB[(Message history\nSummary message)]
         summarizeQ{Summarize?\nshould_summarize}
         summarize[Summarize /w API]
         saveSummary[(Chatcmpl & Choice\nSummary message)]
     end
     stop([Stop])
+    start([Start])
+    output1[/Output API/]
+    output2[/Output API/]
 
-
-    start([Start]) --> startStory
+    start --> startStory
     initSys -.get_init_message.-> startStory
+    output1 --> userInput
 
-    startStory --> userInput
-    userInput --> stopQ
     startStory -.save_api_response.-> saveMessage1
+    startStory --> output1
+    userInput --> stopQ
 
+    output2 --> summarizeQ
     api2 -.save_api_response.-> saveMessage3
-    api2 --> summarizeQ
+    api2 --> output2
 
-    stopQ -- Yes --> stop
     stopQ -- No --> saveUser
-    saveUser -.save_user_response.-> saveMessage2
+    stopQ -- Yes --> stop
 
     saveUser --> api2
     history -.get_built_messages.-> api2
+    saveUser -.save_user_response.-> saveMessage2
 
     summarize --> userInput
     summarizeQ -- No --> userInput
     summarizeQ -- Yes --> summarize
-    summarizeDB -.get_summary_message_history.-> summarize
-    summarize -.save_summary_message.-> saveSummary
+    summarizeDB -.get_summary_messages.-> summarize
+    summarize -.save_summary_response.-> saveSummary
 ```
 
 ## Entity Relationship Diagram
