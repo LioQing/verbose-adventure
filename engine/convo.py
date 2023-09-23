@@ -67,7 +67,7 @@ class ConvoDataCoupler(abc.ABC):
     @abc.abstractclassmethod
     def get_summary_messages(
         self, history_length: int
-    ) -> Tuple[List[Message], Optional[str]]:
+    ) -> Tuple[List[Message], Optional[Message]]:
         """
         Get the message history and previous summary for the summary
 
@@ -205,15 +205,23 @@ class Convo:
             self.logger.info("Conversation should not be summarized")
             return None
 
-        # Messages
-        messages, prev_summary = self.coupler.get_summary_messages(
+        messages = []
+
+        # History
+        history, prev_summary = self.coupler.get_summary_messages(
             convo_config.history_length
         )
 
         if prev_summary:
-            messages.insert(
-                0, Message(role=Role.ASSISTANT, content=prev_summary)
+            history.insert(0, prev_summary)
+
+        history = [m.model_dump() for m in history]
+        messages.append(
+            Message(
+                role=Role.SYSTEM,
+                content=str(history),
             )
+        )
 
         # System message
         system_message = convo_config.summary_system_message

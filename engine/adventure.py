@@ -11,16 +11,28 @@ class AdventureConvoCoupler(ConvoDataCoupler):
 
     logger: logging.Logger
     message: List[Message]
-    summary_message: Optional[str]
+    chatcmpl: List[Chatcmpl]
+    summary: Optional[str]
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(adventure_config.log_level)
 
         self.message = []
-        self.summary_message = None
+        self.chatcmpl = []
+        self.summary = None
 
         self.logger.info("AdventureConvoCoupler created")
+
+    @property
+    def token_used(self) -> int:
+        """
+        Get the number of tokens used
+
+        Returns:
+            The number of tokens used
+        """
+        return sum(c.usage.total_tokens for c in self.chatcmpl)
 
     def get_init_message(self) -> Message:
         """
@@ -46,6 +58,7 @@ class AdventureConvoCoupler(ConvoDataCoupler):
         Returns:
             The chosen response message
         """
+        self.chatcmpl.append(chatcmpl)
         chosen = chatcmpl.choices[0].message
         self.message.append(chosen)
         self.logger.info(f"API response saved: {chosen}")
@@ -80,7 +93,7 @@ class AdventureConvoCoupler(ConvoDataCoupler):
             Message(
                 role=Role.SYSTEM,
                 content=adventure_config.system_message
-                + (f" {self.summary_message}" if self.summary_message else ""),
+                + (f" {self.summary}" if self.summary else ""),
             )
         )
 
@@ -105,7 +118,13 @@ class AdventureConvoCoupler(ConvoDataCoupler):
             "Getting message history and previous summary for summary"
         )
 
-        return self.message[-history_length:], self.summary_message
+        if self.summary is None:
+            return self.message[-history_length:], None
+
+        return (
+            self.message[-history_length:],
+            Message(role=Role.ASSISTANT, content=self.summary),
+        )
 
     def save_summary_response(self, chatcmpl: Chatcmpl) -> Message:
         """
@@ -117,9 +136,10 @@ class AdventureConvoCoupler(ConvoDataCoupler):
         Returns:
             The summary message
         """
+        self.chatcmpl.append(chatcmpl)
         chosen = chatcmpl.choices[0].message
-        self.summary_message = chosen.content
-        self.logger.info(f"Summary response saved: {self.summary_message}")
+        self.summary = chosen.content
+        self.logger.info(f"Summary response saved: {self.summary}")
 
         return chosen
 
@@ -197,6 +217,7 @@ class Adventure:
                 print(f"Error: {e}")
 
         self.logger.info("Adventure ended")
+        print(f"Used {self.convo_coupler.token_used} tokens")
 
     def get_user_input(self) -> str:
         """Get user input"""

@@ -12,10 +12,6 @@ class Role(StrEnum):
     ASSISTANT = "assistant"
     FUNCTION = "function"
 
-    def __str__(self) -> str:
-        """Get the string representation of the role"""
-        return self.value
-
     def __repr__(self) -> str:
         """Get the string representation of the role"""
         return repr(self.value)
