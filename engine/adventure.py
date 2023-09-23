@@ -2,10 +2,10 @@ import logging
 
 from config.adventure import adventure_config
 
-from .convo import Convo, ConvoStateCoupler
+from .convo import Convo, ConvoDataCoupler
 
 
-class AdventureConvoStateCoupler(ConvoStateCoupler):
+class AdventureConvoStateCoupler(ConvoDataCoupler):
     """Coupler for Adventure Convo"""
 
 

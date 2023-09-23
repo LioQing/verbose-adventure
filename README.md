@@ -6,50 +6,57 @@ This is demo project for GPT interactive story generation.
 
 ```mermaid
 flowchart LR
-    start([Start]) --> startStory
-
     subgraph "Initialize"
         direction TB
         startStory[Start story w/ API]
-        initSys[(System message\nStart message)] --> startStory
-        startStory --> saveMessage1[(Chatcmpl & Choice\nMessage)]
+        initSys[(System message\nStart message)]
+        saveMessage1[(Chatcmpl & Choice\nMessage)]
     end
-
-    startStory --> stopQ{Stop?}
-    stopQ -- No --> userInput[/User input/]
-
-    subgraph "User response"
-        userInput --> saveMessage2[(Message)]
-    end
-
-    stopQ -- Yes --> stop([Stop])
 
     subgraph "API response"
-        direction LR
+        direction TB
         history[(Message history\nSummary message\nSystem message)]
         saveMessage3[(Chatcmpl & Choice\nMessage)]
         api2[Get response w/ API]
-        build[Build message]
     end
 
-    history --> api2
-    build --> api2
-    userInput --> build
-    api2 --> saveMessage3
-    api2 --> summarizeQ
+    subgraph "User response"
+        direction TB
+        userInput[/User input/]
+        saveMessage2[(Message)]
+    end
 
     subgraph "Summarize"
-        direction LR
+        direction TB
         summarizeDB[(Message history)]
-        summarizeQ{Summarize?}
+        summarizeQ{Summarize?\nshould_summarize}
         summarize[Summarize /w API]
         saveSummary[(Chatcmpl & Choice\nSummary message)]
     end
+    stopQ{Stop?\nshould_stop}
+    stop([Stop])
 
-    summarize --> stopQ
-    summarizeDB --> summarize
-    summarize --> saveSummary
-    summarizeQ --> summarize
+    summarize --> userInput
+    summarizeQ -- Yes --> summarize
+    summarizeDB -.get_summary_message_history.-> summarize
+    summarize -.save_summary_message.-> saveSummary
+
+    start([Start]) --> startStory
+    initSys -.get_init_message.-> startStory
+
+    startStory -.save_api_response.-> saveMessage1
+    startStory --> userInput
+    summarizeQ -- No --> userInput
+    userInput -.save_user_response.-> saveMessage2
+    userInput --> stopQ
+
+    stopQ -- No --> api2
+    history -.get_built_messages.-> api2
+
+    api2 -.save_api_response.-> saveMessage3
+    api2 --> summarizeQ
+
+    stopQ -- Yes --> stop
 ```
 
 ## Entity Relationship Diagram
@@ -63,6 +70,7 @@ erDiagram
     Adventure {
         ManyToOne(User) user FK
         Text system_message
+        Text start_message
         Text summary_message "Nullable"
         PositiveInteger iteration
     }

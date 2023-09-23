@@ -1,13 +1,13 @@
 import abc
 import logging
-from enum import StrEnum
 from typing import Any, Dict, List, Optional
 
 import openai
-from pydantic import BaseModel, Field
 
 from config.convo import convo_config
 from config.openai import open_ai_config
+
+from .models import Chatcmpl, Message, Role
 
 openai.api_key = open_ai_config.key
 openai.api_base = open_ai_config.url
@@ -15,67 +15,47 @@ openai.api_type = open_ai_config.api_type
 openai.api_version = open_ai_config.version
 
 
-class Role(StrEnum):
-    """Role enumeration for conversation messages"""
-
-    SYSTEM = "system"
-    USER = "user"
-    ASSISTANT = "assistant"
-    FUNCTION = "function"
-
-
-class Message(BaseModel):
-    """Message for conversation"""
-
-    role: Role
-    content: str
-    name: Optional[str] = Field(None)
-
-    def model_dump(self) -> Dict[str, Any]:
-        """Dump the model"""
-        dump = super().model_dump()
-        if self.name is None:
-            dump.pop("name")
-
-        return dump
-
-
-class ConvoStateCoupler(abc.ABC):
+class ConvoDataCoupler(abc.ABC):
     """Abstract class for Convo to communicate with its data state"""
 
     @abc.abstractclassmethod
-    def get_system_message(self) -> Optional[str]:
-        """Get the system message"""
-        pass
-
-    @abs.abstractclassmethod
-    def set_system_message(self, message: str):
-        """Set the system message"""
+    def get_init_message(self) -> Message:
+        """Get the initial message"""
         pass
 
     @abc.abstractclassmethod
-    def get_summary_message(self) -> Optional[str]:
-        """Get the summary message"""
-        pass
-
-    @abs.abstractclassmethod
-    def set_summary_message(self, message: str):
-        """Set the summary message"""
+    def save_api_response(self, chatcmpl: Chatcmpl):
+        """Save the API response"""
         pass
 
     @abc.abstractclassmethod
-    def append_message(self, message: Message):
-        """Append a message to the conversation"""
+    def save_user_response(self, message: Message):
+        """Save the user response"""
         pass
 
     @abc.abstractclassmethod
-    def get_story_messages(self, num: int) -> List[Message]:
-        """Get the last `num` messages in the current story"""
+    def get_built_messages(self) -> List[Message]:
+        """Build the message list for the OpenAI call"""
         pass
 
     @abc.abstractclassmethod
-    def get_story_length(self) -> int:
-        """Get the length of the message in the current story"""
+    def get_summary_message_history(self) -> List[Message]:
+        """Get the message history for the summary"""
+        pass
+
+    @abc.abstractclassmethod
+    def save_summary_message(self, message: Message):
+        """Save the summary message"""
+        pass
+
+    @abc.abstractclassmethod
+    def should_stop(self, message: Message) -> bool:
+        """Return if the conversation should stop"""
+        pass
+
+    @abc.abstractclassmethod
+    def should_summarize(self) -> bool:
+        """Return if the conversation should be summarized"""
         pass
 
 
@@ -153,10 +133,8 @@ class Convo:
         history_messages = repr([m.model_dump() for m in history])
 
         # Add summary system message
-        summary_system_message = None
-        if self.summary_message:
-            summary_system_message = convo_config.summary_system_message
-        else:
+        summary_system_message = convo_config.summary_system_message
+        if self.summary_message is None:
             summary_system_message = (
                 convo_config.summary_system_message_no_prev
             )

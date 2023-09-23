@@ -25,6 +25,7 @@ class Adventure(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     system_message = models.TextField(default="You are an assistant.")
+    start_message = models.TextField(default="Please start.")
     summary_message = models.TextField(null=True, blank=True)
     iteration = models.PositiveIntegerField(default=0)
 
@@ -44,7 +45,7 @@ class Chatcmpl(models.Model):
 
     id = models.TextField(primary_key=True, unique=True)
     users = models.ForeignKey(Adventure, on_delete=models.CASCADE)
-    messages = models.ManyToManyField(Message, through="Choice")
+    messages = models.ManyToManyField(Message)
     object_name = models.TextField()
     created_at = models.DateTimeField()
     model = models.TextField()
