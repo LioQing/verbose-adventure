@@ -1,27 +1,169 @@
 import logging
+from typing import List, Optional, Tuple
 
 from config.adventure import adventure_config
 
-from .convo import Convo, ConvoDataCoupler
+from .convo import Chatcmpl, Convo, ConvoDataCoupler, Message, Role
 
 
-class AdventureConvoStateCoupler(ConvoDataCoupler):
+class AdventureConvoCoupler(ConvoDataCoupler):
     """Coupler for Adventure Convo"""
+
+    logger: logging.Logger
+    message: List[Message]
+    summary_message: Optional[str]
+
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(adventure_config.log_level)
+
+        self.message = []
+        self.summary_message = None
+
+        self.logger.info("AdventureConvoCoupler created")
+
+    def get_init_message(self) -> Message:
+        """
+        Get the initial message
+
+        Returns:
+            The initial message
+        """
+        self.logger.info("Getting init message")
+        return Message(
+            role=Role.SYSTEM,
+            content=adventure_config.system_message
+            + " You may start the story however you like.",
+        )
+
+    def save_api_response(self, chatcmpl: Chatcmpl) -> Message:
+        """
+        Save the API response
+
+        Args:
+            chatcmpl: The API response
+
+        Returns:
+            The chosen response message
+        """
+        chosen = chatcmpl.choices[0].message
+        self.message.append(chosen)
+        self.logger.info(f"API response saved: {chosen}")
+
+        return chosen
+
+    def save_user_response(self, message: Message):
+        """
+        Save the user response
+
+        Args:
+            message: The user message
+        """
+        self.message.append(message)
+        self.logger.info(f"User response saved: {message}")
+
+    def get_built_messages(self, history_length: int) -> List[Message]:
+        """
+        Build the message list for the OpenAI call
+
+        Args:
+            n: The number of messages to build from history
+
+        Returns:
+            The list of messages (system message, summary message, history)
+        """
+        self.logger.info("Building message list for OpenAI call")
+
+        messages = []
+
+        messages.append(
+            Message(
+                role=Role.SYSTEM,
+                content=adventure_config.system_message
+                + (f" {self.summary_message}" if self.summary_message else ""),
+            )
+        )
+
+        messages.extend(self.message[-history_length:])
+
+        return messages
+
+    def get_summary_messages(
+        self, history_length: int
+    ) -> Tuple[List[Message], Optional[str]]:
+        """
+        Get the message history and previous summary for the summary
+
+        Args:
+            n: The number of messages to build from history
+
+        Returns:
+            The list of messages history
+            Optional previous summary
+        """
+        self.logger.info(
+            "Getting message history and previous summary for summary"
+        )
+
+        return self.message[-history_length:], self.summary_message
+
+    def save_summary_response(self, chatcmpl: Chatcmpl) -> Message:
+        """
+        Save the summary message
+
+        Args:
+            chatcmpl: The API response
+
+        Returns:
+            The summary message
+        """
+        chosen = chatcmpl.choices[0].message
+        self.summary_message = chosen.content
+        self.logger.info(f"Summary response saved: {self.summary_message}")
+
+        return chosen
+
+    def should_stop(self, message: Message) -> bool:
+        """
+        Return if the conversation should stop
+
+        Args:
+            message: The user message
+
+        Returns:
+            True if the conversation should stop, False otherwise
+        """
+        return message.content == "exit()"
+
+    def should_summarize(
+        self, history_length: int, summary_interval: int
+    ) -> bool:
+        """
+        Return if the conversation should be summarized
+
+        Args:
+            history_length: The length of the message history
+            summary_interval: The interval to summarize
+
+        Returns:
+            True if the conversation should be summarized, False otherwise
+        """
+        return len(self.message) % summary_interval == 0
 
 
 class Adventure:
     """The main adventure class"""
 
     logger: logging.Logger
+    convo_coupler: AdventureConvoCoupler
     convo: Convo
-    system_message: str
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(adventure_config.log_level)
 
-        self.convo = Convo()
-        self.system_message = adventure_config.system_message
+        self.convo_coupler = AdventureConvoCoupler()
+        self.convo = Convo(self.convo_coupler)
 
         self.logger.info("Adventure created")
 
@@ -30,28 +172,42 @@ class Adventure:
         self.logger.info("Adventure started")
 
         print("Say something to start the game")
+
+        init_story = self.convo.init_story()
+        self.print_assistant_response(init_story)
+
         while True:
             try:
                 user_input = self.get_user_input()
+                user_message = Message(role=Role.USER, content=user_input)
+                user_response = self.convo.process_user_response(user_message)
 
-                if user_input == "exit":
-                    print(
-                        "Conversation ended, token used:"
-                        f" {self.convo.token_used}"
-                    )
+                if user_response is None:
+                    print("Session ended")
                     break
-                elif user_input == "summarize()":
-                    summerization = self.convo.summarize()
-                    print(f"Summarization: {summerization}")
-                    continue
 
-                response = self.convo.get_response(
-                    user_input, self.system_message
-                )
-                print(f"Assistant: {response}")
+                api_response = self.convo.process_api_response()
+
+                summary = self.convo.summarize()
+                if summary:
+                    self.print_summary_response(summary)
+
+                self.print_assistant_response(api_response)
             except Exception as e:
                 print(f"Error: {e}")
+
+        self.logger.info("Adventure ended")
 
     def get_user_input(self) -> str:
         """Get user input"""
         return input("> ")
+
+    def print_assistant_response(self, message: Message):
+        """Output the response of the assistant"""
+        response = message.content
+        print(f"Assistant: {response}")
+
+    def print_summary_response(self, message: Message):
+        """Output the response of the assistant"""
+        response = message.content
+        print(f"Summary: {response}")

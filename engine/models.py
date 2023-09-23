@@ -1,5 +1,5 @@
 from enum import StrEnum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -11,6 +11,14 @@ class Role(StrEnum):
     USER = "user"
     ASSISTANT = "assistant"
     FUNCTION = "function"
+
+    def __str__(self) -> str:
+        """Get the string representation of the role"""
+        return self.value
+
+    def __repr__(self) -> str:
+        """Get the string representation of the role"""
+        return repr(self.value)
 
 
 class FunctionCall(BaseModel):
@@ -59,10 +67,10 @@ class Chatcmpl(BaseModel):
     """Chat completion by OpenAI API"""
 
     id: str
-    object_name: str
-    created_at: str
+    object: str
+    created: int
     model: str
-    choices: Dict[str, Choice]
+    choices: List[Choice]
     usage: Usage
 
 
@@ -71,4 +79,4 @@ class ChatcmplRequest(BaseModel):
 
     deployment_id: str
     model: str
-    messages: Dict[str, Message]
+    messages: List[Dict[str, Any]]

@@ -6,57 +6,56 @@ This is demo project for GPT interactive story generation.
 
 ```mermaid
 flowchart LR
-    subgraph "Initialize"
-        direction TB
+    subgraph "Initialize story (init_story)"
         startStory[Start story w/ API]
         initSys[(System message\nStart message)]
         saveMessage1[(Chatcmpl & Choice\nMessage)]
     end
 
-    subgraph "API response"
-        direction TB
+    subgraph "Do API response (do_api_response)"
         history[(Message history\nSummary message\nSystem message)]
         saveMessage3[(Chatcmpl & Choice\nMessage)]
         api2[Get response w/ API]
     end
 
-    subgraph "User response"
-        direction TB
+    subgraph "Do user response (do_user_response)"
         userInput[/User input/]
         saveMessage2[(Message)]
+        stopQ{Stop?\nshould_stop}
+        saveUser[Save user message]
     end
 
-    subgraph "Summarize"
-        direction TB
+    subgraph "Summarize (summarize)"
         summarizeDB[(Message history)]
         summarizeQ{Summarize?\nshould_summarize}
         summarize[Summarize /w API]
         saveSummary[(Chatcmpl & Choice\nSummary message)]
     end
-    stopQ{Stop?\nshould_stop}
     stop([Stop])
 
-    summarize --> userInput
-    summarizeQ -- Yes --> summarize
-    summarizeDB -.get_summary_message_history.-> summarize
-    summarize -.save_summary_message.-> saveSummary
 
     start([Start]) --> startStory
     initSys -.get_init_message.-> startStory
 
-    startStory -.save_api_response.-> saveMessage1
     startStory --> userInput
-    summarizeQ -- No --> userInput
-    userInput -.save_user_response.-> saveMessage2
     userInput --> stopQ
-
-    stopQ -- No --> api2
-    history -.get_built_messages.-> api2
+    startStory -.save_api_response.-> saveMessage1
 
     api2 -.save_api_response.-> saveMessage3
     api2 --> summarizeQ
 
     stopQ -- Yes --> stop
+    stopQ -- No --> saveUser
+    saveUser -.save_user_response.-> saveMessage2
+
+    saveUser --> api2
+    history -.get_built_messages.-> api2
+
+    summarize --> userInput
+    summarizeQ -- No --> userInput
+    summarizeQ -- Yes --> summarize
+    summarizeDB -.get_summary_message_history.-> summarize
+    summarize -.save_summary_message.-> saveSummary
 ```
 
 ## Entity Relationship Diagram

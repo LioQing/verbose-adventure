@@ -8,11 +8,12 @@ class ConvoConfig(BaseSettings):
     log_level: str = Field("INFO")
     log_file: str = Field("./data/convo.json")
     summary_interval: int = Field(5)
-    message_history: int = Field(5)
+    history_length: int = Field(5)
     base_summary_system_message: str = Field(
         "You are an assistant to summarize the JSON list of messages given by"
         " the user. Make sure to mention any factual information and name in"
-        " the story. Each sentence consists of about 10 to 30 words."
+        " the story. Do not mention anything not in the story in the JSON"
+        " list. Each sentence consists of about 10 to 30 words."
     )
     prev_summary_system_message: str = (
         "Describe the previous summary using 1 sentence."

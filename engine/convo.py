@@ -1,13 +1,13 @@
 import abc
 import logging
-from typing import Any, Dict, List, Optional
+from typing import List, Optional, Tuple
 
 import openai
 
 from config.convo import convo_config
 from config.openai import open_ai_config
 
-from .models import Chatcmpl, Message, Role
+from .models import Chatcmpl, ChatcmplRequest, Message, Role
 
 openai.api_key = open_ai_config.key
 openai.api_base = open_ai_config.url
@@ -20,42 +20,106 @@ class ConvoDataCoupler(abc.ABC):
 
     @abc.abstractclassmethod
     def get_init_message(self) -> Message:
-        """Get the initial message"""
+        """
+        Get the initial message
+
+        Returns:
+            The initial message
+        """
         pass
 
     @abc.abstractclassmethod
-    def save_api_response(self, chatcmpl: Chatcmpl):
-        """Save the API response"""
+    def save_api_response(self, chatcmpl: Chatcmpl) -> Message:
+        """
+        Save the API response
+
+        Args:
+            chatcmpl: The API response
+
+        Returns:
+            The chosen response message
+        """
         pass
 
     @abc.abstractclassmethod
     def save_user_response(self, message: Message):
-        """Save the user response"""
+        """
+        Save the user response
+
+        Args:
+            message: The user message
+        """
         pass
 
     @abc.abstractclassmethod
-    def get_built_messages(self) -> List[Message]:
-        """Build the message list for the OpenAI call"""
+    def get_built_messages(self, history_length: int) -> List[Message]:
+        """
+        Build the message list for the OpenAI call
+
+        Args:
+            n: The number of messages to build from history
+
+        Returns:
+            The list of messages (system message, summary message, history)
+        """
         pass
 
     @abc.abstractclassmethod
-    def get_summary_message_history(self) -> List[Message]:
-        """Get the message history for the summary"""
+    def get_summary_messages(
+        self, history_length: int
+    ) -> Tuple[List[Message], Optional[str]]:
+        """
+        Get the message history and previous summary for the summary
+
+        Args:
+            n: The number of messages to build from history
+
+        Returns:
+            The list of messages history
+            Optional previous summary message
+        """
         pass
 
     @abc.abstractclassmethod
-    def save_summary_message(self, message: Message):
-        """Save the summary message"""
+    def save_summary_response(self, chatcmpl: Chatcmpl) -> Message:
+        """
+        Save the summary message
+
+        Args:
+            chatcmpl: The API response
+
+        Returns:
+            The summary message
+        """
         pass
 
     @abc.abstractclassmethod
     def should_stop(self, message: Message) -> bool:
-        """Return if the conversation should stop"""
+        """
+        Return if the conversation should stop
+
+        Args:
+            message: The user message
+
+        Returns:
+            True if the conversation should stop, False otherwise
+        """
         pass
 
     @abc.abstractclassmethod
-    def should_summarize(self) -> bool:
-        """Return if the conversation should be summarized"""
+    def should_summarize(
+        self, history_length: int, summary_interval: int
+    ) -> bool:
+        """
+        Return if the conversation should be summarized
+
+        Args:
+            history_length: The length of the message history
+            summary_interval: The interval to summarize
+
+        Returns:
+            True if the conversation should be summarized, False otherwise
+        """
         pass
 
 
@@ -63,153 +127,126 @@ class Convo:
     """Conversation class for OpenAI API"""
 
     logger: logging.Logger
-    system_message: str
-    summary_message: Optional[str]
-    messages: List[Message]
-    token_used: int
+    coupler: ConvoDataCoupler
 
-    def __init__(self, system_message: str):
+    def __init__(self, coupler: ConvoDataCoupler):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(convo_config.log_level)
 
-        self.system_message = system_message
-        self.summary_message = None
-        self.messages = []
-        self.token_used = 0
+        self.coupler = coupler
 
         self.logger.info("Convo created")
 
-    def add_message(self, message: Message):
-        """Add a message to the conversation"""
-        self.logger.info(f"Adding message {message}")
-        self.messages.append(message)
-        self._log_message(message)
+    def init_story(self) -> Message:
+        """
+        Initialize the story
 
-    def set_summary_message(self, message: str):
-        """Set the summary message"""
-        self.logger.info(f"Setting summary message {message}")
-        self.summary_message = message
+        Returns:
+            The chosen response message
+        """
+        self.logger.info("Initializing story")
 
-    def get_response(self, user_message: str) -> str:
-        """Call and get the response from the OpenAI API"""
-        self.messages.append(Message(role=Role.USER, content=user_message))
+        init_message = self.coupler.get_init_message()
+        self.logger.info(f"Init message: {init_message}")
 
-        messages = self._build_messages()
+        chatcmpl = self._call_api([init_message])
+        chosen = self.coupler.save_api_response(chatcmpl)
 
-        response = self._call_api(messages)
-        response_message: str = response.choices[0].message.content
+        self.logger.info("Story initialized")
+        return chosen
 
-        # Summarize if needed
-        if convo_config.summary_interval > 0:
-            if len(self.messages) % convo_config.summary_interval == 0:
-                self.set_summary_message(self.summarize())
+    def process_user_response(self, message: Message) -> Optional[Message]:
+        """
+        Do the user response
 
-        self.messages.append(
-            Message(
-                role=Role.ASSISTANT,
-                content=response_message,
-            )
+        Args:
+            message: The user message
+
+        Returns:
+            The user message if the conversation should continue,
+            None otherwise
+        """
+        self.logger.info(f"Doing user response {message}")
+
+        if self.coupler.should_stop(message):
+            self.logger.info("Conversation should stop")
+            return None
+
+        self.coupler.save_user_response(message)
+
+        self.logger.info("User response done, conversation should continue")
+        return message
+
+    def process_api_response(self) -> Message:
+        """Do the API response."""
+        self.logger.info("Doing API response")
+
+        messages = self.coupler.get_built_messages(convo_config.history_length)
+
+        chatcmpl = self._call_api(messages)
+        chosen = self.coupler.save_api_response(chatcmpl)
+
+        self.logger.info("API response done")
+        return chosen
+
+    def summarize(self) -> Optional[Message]:
+        """
+        Summarize the conversation
+
+        Returns:
+            The summary message if the conversation should be summarized,
+            None otherwise
+        """
+        self.logger.info("Summarizing conversation")
+
+        if not self.coupler.should_summarize(
+            convo_config.history_length, convo_config.summary_interval
+        ):
+            self.logger.info("Conversation should not be summarized")
+            return None
+
+        # Messages
+        messages, prev_summary = self.coupler.get_summary_messages(
+            convo_config.history_length
         )
-        self._log_response(response)
 
-        # Summarize if needed
-        if convo_config.summary_interval > 0:
-            if len(self.messages) % convo_config.summary_interval == 0:
-                self.set_summary_message(self.summarize())
-
-        return response_message
-
-    def summarize(self) -> str:
-        """Summarize the text"""
-        # Add message history
-        message_history = convo_config.message_history
-        history = self.messages[-message_history:]
-
-        if self.summary_message:
-            history.insert(
-                0, Message(role=Role.SYSTEM, content=self.summary_message)
+        if prev_summary:
+            messages.insert(
+                0, Message(role=Role.ASSISTANT, content=prev_summary)
             )
 
-        history_messages = repr([m.model_dump() for m in history])
+        # System message
+        system_message = convo_config.summary_system_message
+        if prev_summary is None:
+            system_message = convo_config.summary_system_message_no_prev
 
-        # Add summary system message
-        summary_system_message = convo_config.summary_system_message
-        if self.summary_message is None:
-            summary_system_message = (
-                convo_config.summary_system_message_no_prev
-            )
-
-        # Build message payload
-        messages = [
+        messages.insert(
+            0,
             Message(
                 role=Role.SYSTEM,
-                content=summary_system_message,
+                content=system_message,
             ),
-            Message(role=Role.USER, content=history_messages),
-        ]
+        )
 
-        self._log_message(messages[0])
+        # Call API
+        chatcmpl = self._call_api(messages)
+        summary_message = self.coupler.save_summary_response(chatcmpl)
 
-        response = self._call_api([m.model_dump() for m in messages])
-        response_message: str = response.choices[0].message.content
+        self.logger.info("Conversation summarized")
+        return summary_message
 
-        self._log_response(response)
-
-        return response_message
-
-    def _call_api(self, messages: List[Dict[str, str]]) -> Dict[str, Any]:
+    def _call_api(self, messages: List[Message]) -> Chatcmpl:
         """Call the OpenAI API with the given messages"""
-        self.logger.info(f"Calling API with messages: {messages}")
-
-        response = openai.ChatCompletion.create(
+        request = ChatcmplRequest(
             deployment_id=convo_config.deployment,
             model=convo_config.model,
-            messages=messages,
+            messages=[m.model_dump() for m in messages],
         )
 
-        self.token_used += response.usage.total_tokens
+        self.logger.info(f"Calling API with request: {request}")
+
+        response = openai.ChatCompletion.create(**request.model_dump())
+        response = Chatcmpl(**response)
 
         self.logger.info(f"API response: {response}")
-
         return response
-
-    def _log_response(self, response: dict):
-        """Log the response"""
-        self.logger.info(f"Logging response {response}")
-        with open(convo_config.log_file, "a") as f:
-            f.write(f"{response}\n")
-
-    def _log_message(self, message: Message):
-        """Log the message"""
-        self.logger.info(f"Logging message {message}")
-        with open(convo_config.log_file, "a") as f:
-            f.write(f"{message}\n")
-
-    def _build_messages(self) -> List[Dict[str, str]]:
-        """Build the messages list for the OpenAI call"""
-        messages: List[Message] = []
-
-        # Add system message
-        messages.append(
-            Message(
-                role=Role.SYSTEM,
-                content=self.system_message,
-            )
-        )
-
-        # Add summary message
-        if self.summary_message:
-            messages.append(
-                Message(
-                    role=Role.ASSISTANT,
-                    content="A summary of previous story: "
-                    + self.summary_message,
-                )
-            )
-
-        # Add message history
-        convo_config.message_history
-
-        messages.extend(self.messages[-convo_config.message_history :])
-
-        return [m.model_dump() for m in messages]
