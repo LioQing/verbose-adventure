@@ -12,7 +12,7 @@ Django==4.2.5
 django-cors-headers==4.2.0
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.0
-drf-yasg==1.21.7
+drf-spectacular==0.26.5
 filelock==3.12.4
 flake8==4.0.1
 flake8-docstrings==1.6.0
@@ -21,6 +21,8 @@ identify==2.5.29
 idna==3.4
 inflection==0.5.1
 isort==5.10.1
+jsonschema==4.19.1
+jsonschema-specifications==2023.7.1
 mccabe==0.6.1
 multidict==6.0.4
 nodeenv==1.8.0
@@ -39,7 +41,9 @@ PyJWT==2.8.0
 python-dotenv==1.0.0
 pytz==2023.3.post1
 PyYAML==6.0.1
+referencing==0.30.2
 requests==2.31.0
+rpds-py==0.10.3
 snowballstemmer==2.2.0
 sqlparse==0.4.4
 toml==0.10.2

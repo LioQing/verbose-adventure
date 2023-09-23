@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from config.adventure import adventure_config
+
 
 class User(AbstractUser):
     """User model"""
@@ -24,8 +26,8 @@ class Adventure(models.Model):
     """Adventure model"""
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    system_message = models.TextField(default="You are an assistant.")
-    start_message = models.TextField(default="Please start.")
+    system_message = models.TextField(default=adventure_config.system_message)
+    start_message = models.TextField(default=adventure_config.start_message)
     summary_message = models.TextField(null=True, blank=True)
     iteration = models.PositiveIntegerField(default=0)
 

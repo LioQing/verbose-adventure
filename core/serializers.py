@@ -1,6 +1,14 @@
 from rest_framework import serializers
 
-from .models import User
+from .models import Adventure, User
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """Serializer for the User model"""
+
+    class Meta:
+        model = User
+        fields = "__all__"
 
 
 class PingPongSerializer(serializers.Serializer):
@@ -9,9 +17,9 @@ class PingPongSerializer(serializers.Serializer):
     ping = serializers.CharField(max_length=4)
 
 
-class UserSerializer(serializers.ModelSerializer):
-    """Serializer for the User model"""
+class AdventureSerializer(serializers.ModelSerializer):
+    """Serializer for the Adventure model"""
 
     class Meta:
-        model = User
+        model = Adventure
         fields = "__all__"

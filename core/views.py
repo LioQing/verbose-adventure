@@ -1,62 +1,31 @@
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import (
-    generics,
-    parsers,
-    permissions,
-    response,
-    status,
-    views,
-    viewsets,
-)
+from rest_framework import generics, permissions, response, views, viewsets
 
 from rest_auth.permissions import IsWhitelisted
 
-from .models import User
-from .serializers import PingPongSerializer, UserSerializer
-
-# ---------------- User ----------------
+from . import models, serializers
 
 
 class UserView(
     generics.CreateAPIView,
     generics.RetrieveAPIView,
     generics.ListAPIView,
-    viewsets.GenericViewSet,
-):
-    """Viewset for the User model"""
-
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    parser_classes = [parsers.FormParser, parsers.MultiPartParser]
-    permission_classes = [permissions.IsAdminUser]
-
-
-class ModifyUserView(
     generics.DestroyAPIView,
     generics.UpdateAPIView,
     viewsets.GenericViewSet,
 ):
-    """Viewset for modifying the User model"""
+    """Viewset for the User model"""
 
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+    queryset = models.User.objects.all()
+    serializer_class = serializers.UserSerializer
     permission_classes = [permissions.IsAdminUser]
-
-
-# ---------------- Ping ----------------
 
 
 class PingPongView(views.APIView):
     """View for checking if the server is running"""
 
-    serializer_class = PingPongSerializer
+    serializer_class = serializers.PingPongSerializer
     permission_classes = [IsWhitelisted]
 
-    @swagger_auto_schema(
-        responses={
-            status.HTTP_200_OK: PingPongSerializer,
-        }
-    )
     def get(self, request):
         """Return a pong response"""
         serializer = self.serializer_class(data={"ping": "pong"})
@@ -64,4 +33,15 @@ class PingPongView(views.APIView):
         return response.Response(serializer.data)
 
 
-# ---------------- Convo ----------------
+class AdventureView(
+    generics.CreateAPIView,
+    generics.RetrieveAPIView,
+    generics.ListAPIView,
+    generics.UpdateAPIView,
+    viewsets.GenericViewSet,
+):
+    """View for the adventure"""
+
+    queryset = models.Adventure.objects.all()
+    serializer_class = serializers.AdventureSerializer
+    permission_classes = [IsWhitelisted]

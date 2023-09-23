@@ -44,8 +44,10 @@ class AdventureConvoCoupler(ConvoDataCoupler):
         self.logger.info("Getting init message")
         return Message(
             role=Role.SYSTEM,
-            content=adventure_config.system_message
-            + " You may start the story however you like.",
+            content=(
+                f"{adventure_config.system_message} "
+                f"{adventure_config.start_message}"
+            ),
         )
 
     def save_api_response(self, chatcmpl: Chatcmpl) -> Message:
@@ -190,8 +192,6 @@ class Adventure:
     def run(self):
         """Start the adventure"""
         self.logger.info("Adventure started")
-
-        print("Say something to start the game")
 
         init_story = self.convo.init_story()
         self.print_assistant_response(init_story)

@@ -15,6 +15,7 @@ class AdventureConfig(BaseSettings):
         " Give only 2 to 3 sentences, do not list actions for user to choose"
         " from."
     )
+    start_message: str = Field("You may start the story however you like.")
 
     class Config:
         env_prefix = "ADVENTURE_"
