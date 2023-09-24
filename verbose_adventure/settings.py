@@ -10,10 +10,19 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import logging
 from datetime import timedelta
 from pathlib import Path
 
 from config.db import db_config
+from utils import formatter
+
+logging.basicConfig()
+logger = logging.getLogger()
+handler = logging.StreamHandler()
+handler.setFormatter(formatter.ColoredFormatter())
+logger.handlers.clear()
+logger.addHandler(handler)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

@@ -65,6 +65,7 @@ flowchart LR
 ## Entity Relationship Diagram
 
 ```mermaid
+
 erDiagram
     User {
         Boolean is_whitelisted
@@ -73,6 +74,7 @@ erDiagram
     Adventure {
         ManyToOne(User) user FK
         OneToOne(Summary) summary FK
+        OneToOne(Message) latest_message FK "Nullable"
         Text system_message
         Text start_message
         PositiveInteger iteration
@@ -98,13 +100,14 @@ erDiagram
     Message {
         Datetime timestamp PK "Partial PK"
         ManyToOne(Adventure) adventure FK,PK "Partial PK"
+        OneToOne(Message) prev FK "Nullable"
         Role role "System, Assistant, User, Function"
         Text content
         Text name "Nullable"
     }
 
     Choice {
-        ManyToOne(Chatcmpl) chatcmpls FK,PK "Partial PK"
+        ManyToOne(Chatcmpl) chatcmpl FK,PK "Partial PK"
         PositiveInteger index PK "Partial PK"
         OneToOne(Message) message FK "Nullable"
         OneToOne(Summary) summary FK "Nullable"
@@ -112,6 +115,8 @@ erDiagram
     }
 
     User ||--o{ Adventure : plays
+
+    Message }o--o{ Message : prev
 
     Adventure ||--o{ Message : has
 
@@ -121,7 +126,7 @@ erDiagram
 
     Chatcmpl ||--|{ Choice : responds
 
-        Summary |o--o| Adventure : current
+    Summary |o--o| Adventure : current
 
     Summary |o--o{ Chatcmpl : takes
 

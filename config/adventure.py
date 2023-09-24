@@ -16,6 +16,7 @@ class AdventureConfig(BaseSettings):
         " from."
     )
     start_message: str = Field("You may start the story however you like.")
+    default_choice_index: int = Field(0)
 
     class Config:
         env_prefix = "ADVENTURE_"

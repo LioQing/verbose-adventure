@@ -25,7 +25,15 @@ class AdventureSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class AdventureStartSerializer(serializers.Serializer):
-    """Serializer for the AdventureStartView"""
+class ConvoStartSerializer(serializers.Serializer):
+    """Serializer for the ConvoStartView"""
 
-    response = serializers.CharField()
+    response = serializers.CharField(read_only=True)
+
+
+class ConvoRespondSerializer(serializers.Serializer):
+    """Serializer for the ConvoRespondView"""
+
+    user_response = serializers.CharField(required=True)
+    api_response = serializers.CharField(read_only=True)
+    summary = serializers.CharField(read_only=True)

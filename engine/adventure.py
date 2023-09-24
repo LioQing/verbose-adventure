@@ -62,7 +62,9 @@ class ConvoCoupler(BaseConvoCoupler):
             The chosen response message
         """
         self.chatcmpl.append(chatcmpl)
-        chosen = chatcmpl.choices[0].message
+        chosen = chatcmpl.choices[
+            adventure_config.default_choice_index
+        ].message
         self.message.append(chosen)
         self.logger.info(f"API response saved: {chosen}")
 
@@ -140,7 +142,9 @@ class ConvoCoupler(BaseConvoCoupler):
             The summary message
         """
         self.chatcmpl.append(chatcmpl)
-        chosen = chatcmpl.choices[0].message
+        chosen = chatcmpl.choices[
+            adventure_config.default_choice_index
+        ].message
         self.summary = chosen.content
         self.logger.info(f"Summary response saved: {self.summary}")
 
@@ -171,7 +175,7 @@ class ConvoCoupler(BaseConvoCoupler):
         Returns:
             True if the conversation should be summarized, False otherwise
         """
-        return len(self.message) % summary_interval == 0
+        return len(self.message) % summary_interval in [0, 1]
 
 
 class Adventure:

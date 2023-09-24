@@ -1,150 +1,179 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from django.db.models import Manager
 
 from engine import models as engine_models
 
-from . import models
+from .enums import ChatcmplKind
+
+if TYPE_CHECKING:
+    from .models import Adventure, Chatcmpl, Choice, Message, Summary
 
 
 class MessageManager(Manager):
     """Manager for Message"""
 
-    def from_engine_message(
-        adventure_id: int, message: engine_models.Message
-    ) -> models.Message:
+    def create_from_engine_message(
+        self, adventure: "Adventure", message: engine_models.Message
+    ) -> "Message":
         """
         Create a Message from an engine Message
 
         Args:
-            adventure_id: The adventure ID
+            adventure: The adventure
             message: The engine Message
 
         Returns:
             The created Message
         """
-        return models.Message(
-            adventure_id=adventure_id,
-            role=message.role,
-            content=message.content,
-            name=message.name,
-        )
+        from .models import Message
+
+        message = Message.from_engine_message(adventure, message)
+        message.save()
+        return message
+
+    def get_latest_n_messages(
+        self, adventure: "Adventure", n: int
+    ) -> List["Message"]:
+        """
+        Get the latest n messages for an adventure
+
+        Args:
+            adventure: The adventure
+            n: The number of messages
+
+        Returns:
+            The list of messages
+        """
+        from .models import Adventure
+
+        curr = Adventure.objects.get(id=adventure.id).latest_message
+        if curr is None:
+            return []
+
+        messages = []
+        for _ in range(n):
+            messages.append(curr)
+            curr = curr.prev
+            if curr is None:
+                break
+        return messages
 
 
 class SummaryManager(Manager):
     """Manager for Summary"""
 
-    def from_engine_summary(
-        adventure_id: int, summary: engine_models.Message
-    ) -> models.Summary:
+    def create_from_engine_summary(
+        self, adventure: "Adventure", summary: engine_models.Message
+    ) -> "Summary":
         """
         Create a Summary from an engine Summary
 
         Args:
-            adventure_id: The adventure ID
+            adventure: The adventure
             summary: The engine summary Message
 
         Returns:
             The created Summary
         """
-        return models.Summary(
-            summary=summary.content,
-        )
+        from .models import Summary
+
+        summary = Summary.from_engine_summary(adventure.id, summary)
+        summary.save()
+        return summary
 
 
 class ChoiceManager(Manager):
     """Manager for Choice"""
 
-    def from_engine_choice(
-        chatcmpl_id: int,
-        message_id: Optional[int],
-        summary_id: Optional[int],
+    def create_from_engine_choice(
+        self,
+        chatcmpl: "Chatcmpl",
+        message: Optional["Message"],
+        summary: Optional["Summary"],
         choice: engine_models.Choice,
-    ) -> models.Choice:
+    ) -> "Choice":
         """
         Create a Choice from an engine Choice
 
         Args:
-            adventure_id: The adventure ID
-            message_id: The message ID
-            summary_id: The summary ID
+            adventure: The adventure ID
+            message: The message ID
+            summary: The summary ID
             choice: The engine Choice
 
         Returns:
             The created Choice
         """
-        return models.Choice(
-            chatcmpl_id=chatcmpl_id,
-            index=choice.index,
-            message=message_id,
-            summary=summary_id,
-            finish_reason=choice.finish_reason,
-        )
+        from .models import Choice
+
+        choice = Choice.from_engine_choice(chatcmpl, message, summary, choice)
+        choice.save()
+        return choice
 
 
 class ChatcmplManager(Manager):
     """Manager for Chatcmpl"""
 
-    def from_engine_chatcmpl(
-        adventure_id: int,
-        summary_id: Optional[int],
-        message_ids: List[int],
+    def create_from_engine_chatcmpl(
+        self,
+        adventure: "Adventure",
+        summary: Optional["Summary"],
+        messages: List["Message"],
         chatcmpl: engine_models.Chatcmpl,
         is_summary: bool,
-        choice_index: int = 0,
-    ) -> models.Chatcmpl:
+        choice_index: int,
+    ) -> "Chatcmpl":
         """
         Create a Chatcmpl from an engine Chatcmpl
 
         It also creates the related Messages or Summary, and Choices
 
         Args:
-            adventure_id: The adventure ID
-            is_summary: It is a summary if True, else it is a message
+            adventure: The adventure
+            summary: The summary
+            messages: The messages
             chatcmpl: The engine Chatcmpl
+            is_summary: It is a summary if True, else it is a message
             choice_index: The index of the chosen choice
 
         Returns:
             The created Chatcmpl
         """
+        from .models import Chatcmpl, Choice, Message, Summary
+
         # Create chatcmpl
-        chatcmpl = models.Chatcmpl(
+        chatcmpl_model = Chatcmpl.objects.create(
             id=chatcmpl.id,
-            adventure_id=adventure_id,
-            summary_id=summary_id,
-            message_ids=message_ids,
-            kind=models.ChatcmplKind.SUMMARY
-            if is_summary
-            else models.ChatcmplKind.MESSAGE,
+            adventure=adventure,
+            summary=summary,
+            kind=ChatcmplKind.SUMMARY if is_summary else ChatcmplKind.MESSAGE,
             object_name=chatcmpl.object,
             created_at=datetime.fromtimestamp(chatcmpl.created),
             model=chatcmpl.model,
             completion_tokens=chatcmpl.usage.completion_tokens,
             prompt_tokens=chatcmpl.usage.prompt_tokens,
         )
+        chatcmpl_model.messages.set(messages)
 
         for i, choice in enumerate(chatcmpl.choices):
             # Create messages if it is selected
-            summary_id = None
-            message_id = None
+            summary = None
+            message = None
             if i == choice_index:
                 if is_summary:
-                    summary = models.Summary.objects.from_engine_summary(
-                        adventure_id, choice.message
+                    summary = Summary.objects.create_from_engine_summary(
+                        adventure, choice.message
                     )
-                    summary.save()
-                    summary_id = summary.id
                 else:
-                    message = models.Message.objects.from_engine_message(
-                        adventure_id, choice.message
+                    message = Message.objects.create_from_engine_message(
+                        adventure, choice.message
                     )
-                    message.save()
-                    message_id = message.id
 
             # Create choice
-            choice = ChoiceManager.from_engine_choice(
-                chatcmpl.id, message_id, summary_id, choice
+            choice = Choice.objects.create_from_engine_choice(
+                chatcmpl_model, message, summary, choice
             )
 
-        return chatcmpl
+        return chatcmpl_model
