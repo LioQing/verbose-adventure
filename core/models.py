@@ -66,6 +66,21 @@ class Adventure(models.Model):
     start_message = models.TextField(default=adventure_config.start_message)
     iteration = models.PositiveIntegerField(default=0)
 
+    @property
+    def token_count(self) -> int:
+        """
+        Return the total token count of the adventure
+
+        Returns:
+            The total token count of the adventure
+        """
+        return (
+            self.chatcmpl_set.annotate(
+                token=models.F("completion_tokens") + models.F("prompt_tokens")
+            ).aggregate(models.Sum("token"))["token__sum"]
+            or 0
+        )
+
 
 class Message(models.Model):
     """Message model"""

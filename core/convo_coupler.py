@@ -194,6 +194,14 @@ class ConvoCoupler(BaseConvoCoupler):
             index=adventure_config.default_choice_index
         )
 
+        # Save summary
+        new_summary = models.Summary.objects.create_from_engine_summary(
+            adventure,
+            chatcmpl.choices[adventure_config.default_choice_index].message,
+        )
+        adventure.summary = new_summary
+        adventure.save()
+
         self.logger.info(f"Summary response saved: {chosen.message}")
 
         return chatcmpl.choices[adventure_config.default_choice_index].message

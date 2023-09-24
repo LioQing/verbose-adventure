@@ -18,6 +18,21 @@ convo_urlpatterns = [
         views.ConvoRespondView.as_view(),
         name="convo-respond",
     ),
+    path(
+        "convo/<int:id>/summary",
+        views.ConvoSummaryView.as_view(),
+        name="convo-summary",
+    ),
+    path(
+        "convo/<int:id>/token-count",
+        views.ConvoTokenCountView.as_view(),
+        name="convo-token-count",
+    ),
+    path(
+        "convo/token-count",
+        views.ConvoTotalTokenCountView.as_view(),
+        name="convo-total-token-count",
+    ),
 ]
 
 urlpatterns = [

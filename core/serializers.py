@@ -25,6 +25,15 @@ class AdventureSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class AdventureOwnedSerializer(serializers.ModelSerializer):
+    """Serializer for only user owned the Adventure model"""
+
+    class Meta:
+        model = Adventure
+        fields = "__all__"
+        read_only_fields = ["user"]
+
+
 class ConvoStartSerializer(serializers.Serializer):
     """Serializer for the ConvoStartView"""
 
@@ -37,3 +46,15 @@ class ConvoRespondSerializer(serializers.Serializer):
     user_response = serializers.CharField(required=True)
     api_response = serializers.CharField(read_only=True)
     summary = serializers.CharField(read_only=True)
+
+
+class ConvoSummarySerializer(serializers.Serializer):
+    """Serializer for the ConvoSummaryView"""
+
+    summary = serializers.CharField()
+
+
+class ConvoTokenCountSerializer(serializers.Serializer):
+    """Serializer for the ConvoTokenCountView"""
+
+    token_count = serializers.IntegerField()
