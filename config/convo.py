@@ -1,41 +1,21 @@
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
-
-class MainConfig(BaseSettings):
-    """Main configurations"""
-
-    enable_log: bool = Field(False)
-
-    class Config:
-        env_prefix = "MAIN_"
-        env_file = ".env"
-
-
-class OpenAIConfig(BaseSettings):
-    """Configurations for OpenAI API"""
-
-    api_type: str = Field("azure")
-    version: str = Field("2023-05-15")
-    key: str
-    url: str
-
-    class Config:
-        env_prefix = "OPENAI_"
-        env_file = ".env"
+from .logger import logger_config
 
 
 class ConvoConfig(BaseSettings):
     """Configurations for Convo"""
 
-    log_level: str = Field("INFO")
-    log_file: str = Field("./data/convo.json")
+    log_level: str = Field(logger_config.level)
     summary_interval: int = Field(5)
-    message_history: int = Field(5)
+    history_length: int = Field(5)
     base_summary_system_message: str = Field(
-        "You are an assistant to summarize the JSON list of messages given by"
-        " the user. Make sure to mention any factual information and name in"
-        " the story. Each sentence consists of about 10 to 30 words."
+        "You are an assistant to summarize a JSON list of messages between an"
+        " assistant and a user, where the assistant is a DnD Dungeon Master"
+        " and user is the player. Make sure to include any factual information"
+        " and name in the story, don't make up anything not mentioned in the"
+        " story. Each sentence consists of about 10 to 30 words."
     )
     prev_summary_system_message: str = (
         "Describe the previous summary using 1 sentence."
@@ -72,6 +52,4 @@ class ConvoConfig(BaseSettings):
         env_file = ".env"
 
 
-main_config = MainConfig()
-open_ai_config = OpenAIConfig()
 convo_config = ConvoConfig()

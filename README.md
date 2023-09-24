@@ -2,6 +2,139 @@
 
 This is demo project for GPT interactive story generation.
 
+## System Flow Diagram
+
+```mermaid
+flowchart LR
+    subgraph "Initialize story (init_story)"
+        startStory[Start story w/ API]
+        initSys[(System message\nStart message)]
+        saveMessage1[(Chatcmpl & Choice\nMessage)]
+    end
+
+    subgraph "Do API response (do_api_response)"
+        history[(Message history\nSummary message\nSystem message)]
+        saveMessage3[(Chatcmpl & Choice\nMessage)]
+        api2[Get response w/ API]
+    end
+
+    subgraph "Do user response (do_user_response)"
+        userInput[/User input/]
+        saveMessage2[(Message)]
+        stopQ{Stop?\nshould_stop}
+        saveUser[Save user message]
+    end
+
+    subgraph "Summarize (summarize)"
+        summarizeDB[(Message history\nSummary message)]
+        summarizeQ{Summarize?\nshould_summarize}
+        summarize[Summarize /w API]
+        saveSummary[(Chatcmpl & Choice\nSummary message)]
+    end
+    stop([Stop])
+    start([Start])
+    output1[/Output API/]
+    output2[/Output API/]
+
+    start --> startStory
+    initSys -.get_init_message.-> startStory
+    output1 --> userInput
+
+    startStory -.save_api_response.-> saveMessage1
+    startStory --> output1
+    userInput --> stopQ
+
+    output2 --> summarizeQ
+    api2 -.save_api_response.-> saveMessage3
+    api2 --> output2
+
+    stopQ -- No --> saveUser
+    stopQ -- Yes --> stop
+
+    saveUser --> api2
+    history -.get_built_messages.-> api2
+    saveUser -.save_user_response.-> saveMessage2
+
+    summarize --> userInput
+    summarizeQ -- No --> userInput
+    summarizeQ -- Yes --> summarize
+    summarizeDB -.get_summary_messages.-> summarize
+    summarize -.save_summary_response.-> saveSummary
+```
+
+## Entity Relationship Diagram
+
+```mermaid
+
+erDiagram
+    User {
+        Boolean is_whitelisted
+    }
+
+    Adventure {
+        ManyToOne(User) user FK
+        OneToOne(Summary) summary FK
+        OneToOne(Message) latest_message FK "Nullable"
+        Text system_message
+        Text start_message
+        PositiveInteger iteration
+    }
+
+    Chatcmpl {
+        Text id PK
+        ManyToOne(Adventure) adventure FK
+        ManyToOne(Summary) summary FK "Nullable"
+        ManyToMany(Message) messages FK
+        ChatcmplKind kind "Message, Summary"
+        Text object_name
+        Datetime created_at
+        Text model
+        PositiveInteger completion_tokens
+        PositiveInteger prompt_tokens
+    }
+
+    Summary {
+        Text summary
+    }
+
+    Message {
+        Datetime timestamp PK "Partial PK"
+        ManyToOne(Adventure) adventure FK,PK "Partial PK"
+        OneToOne(Message) prev FK "Nullable"
+        Role role "System, Assistant, User, Function"
+        Text content
+        Text name "Nullable"
+    }
+
+    Choice {
+        ManyToOne(Chatcmpl) chatcmpl FK,PK "Partial PK"
+        PositiveInteger index PK "Partial PK"
+        OneToOne(Message) message FK "Nullable"
+        OneToOne(Summary) summary FK "Nullable"
+        Text finish_reason
+    }
+
+    User ||--o{ Adventure : plays
+
+    Message }o--o{ Message : prev
+
+    Adventure ||--o{ Message : has
+
+    Adventure ||--o{ Chatcmpl : calls
+
+    Chatcmpl }|--o{ Message : takes
+
+    Chatcmpl ||--|{ Choice : responds
+
+    Summary |o--o| Adventure : current
+
+    Summary |o--o{ Chatcmpl : takes
+
+    Summary ||--o| Choice : chooses
+
+    Message |o--o| Choice : chooses
+```
+
 ## Environment Setup
 
 ### Python
@@ -65,6 +198,67 @@ When you want to deactivate the virtual environment.
 ```bash
 deactivate
 ```
+
+### Environment Variables
+
+Make a copy of the `.env.example` file and rename it to `.env`.
+```bash
+cp .env.example .env
+```
+
+Fill in the environment variables in the `.env` file.
+
+### Docker
+
+You can skip the database and Django setup if you use [Docker](https://www.docker.com).
+
+Make sure you have Docker installed.
+```bash
+docker --version
+```
+
+Also make sure you have [Docker Compose](https://docs.docker.com/compose) installed.
+```bash
+docker-compose --version
+```
+
+Run and build the images.
+```bash
+docker-compose up
+```
+
+Despite `verbose-adventure-web-1` says server is at http://0.0.0.0:8000/, you should use http://localhost:8001/ defined in the `docker-compose.yml` file.
+
+When you want to stop the containers.
+```bash
+docker-compose down
+```
+
+### Database
+
+Use [PostgreSQL](https://www.postgresql.org) as the database.
+
+Change the settings according to the `.env` file.
+
+### Django
+
+Run the migrations.
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+Create a superuser.
+```bash
+python manage.py createsuperuser
+```
+
+Run the server.
+```bash
+python manage.py runserver
+```
+
+## Code Style Enforcement
 
 ### Lint and Pre-commit
 
