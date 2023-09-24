@@ -15,6 +15,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from config.db import db_config
+from config.django import django_config
 from utils import formatter
 
 logging.basicConfig()
@@ -27,19 +28,10 @@ logger.addHandler(handler)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = (
-    "django-insecure--d%wh_g2i7u(xrjbg_*j3a_2+g234r-c**y!=er$t9zt_74j*4"
-)
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+# Configs
+SECRET_KEY = django_config.secret_key
+DEBUG = django_config.debug
+ALLOWED_HOSTS = django_config.allowed_hosts
 
 
 # Application definition

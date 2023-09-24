@@ -8,8 +8,8 @@ class DBConfig(BaseSettings):
     """Database configuration"""
 
     engine: str = Field("django.db.backends.postgresql")
-    host: str = Field("")
-    port: str = Field("")
+    host: str
+    port: str
     name: str
     user: str
     password: str

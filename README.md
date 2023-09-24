@@ -199,7 +199,6 @@ When you want to deactivate the virtual environment.
 deactivate
 ```
 
-
 ### Environment Variables
 
 Make a copy of the `.env.example` file and rename it to `.env`.
@@ -209,12 +208,57 @@ cp .env.example .env
 
 Fill in the environment variables in the `.env` file.
 
+### Docker
+
+You can skip the database and Django setup if you use [Docker](https://www.docker.com).
+
+Make sure you have Docker installed.
+```bash
+docker --version
+```
+
+Also make sure you have [Docker Compose](https://docs.docker.com/compose) installed.
+```bash
+docker-compose --version
+```
+
+Run and build the images.
+```bash
+docker-compose up
+```
+
+Despite `verbose-adventure-web-1` says server is at http://0.0.0.0:8000/, you should use http://localhost:8001/ defined in the `docker-compose.yml` file.
+
+When you want to stop the containers.
+```bash
+docker-compose down
+```
 
 ### Database
 
 Use [PostgreSQL](https://www.postgresql.org) as the database.
 
 Change the settings according to the `.env` file.
+
+### Django
+
+Run the migrations.
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+Create a superuser.
+```bash
+python manage.py createsuperuser
+```
+
+Run the server.
+```bash
+python manage.py runserver
+```
+
+## Code Style Enforcement
 
 ### Lint and Pre-commit
 
