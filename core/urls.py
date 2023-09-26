@@ -7,29 +7,57 @@ router = routers.SimpleRouter()
 router.register(r"user", views.UserView)
 router.register(r"adventure", views.AdventureView)
 
+user_urlpatterns = [
+    path(
+        "user-utils/whitelist/",
+        views.WhitelistView.as_view(),
+        name="whitelist",
+    ),
+    path(
+        "user-utils/unwhitelist/",
+        views.UnwhitelistView.as_view(),
+        name="unwhitelist",
+    ),
+    path(
+        "user-utils/me/",
+        views.UserMeView.as_view(),
+        name="user-me",
+    ),
+    path(
+        "user-utils/details/<int:id>/",
+        views.UserDetailsView.as_view(),
+        name="user-details",
+    ),
+]
+
 convo_urlpatterns = [
     path(
-        "convo/<int:id>/start",
+        "convo/start/<int:id>/",
         views.ConvoStartView.as_view(),
         name="convo-start",
     ),
     path(
-        "convo/<int:id>/respond",
+        "convo/respond/<int:id>/",
         views.ConvoRespondView.as_view(),
         name="convo-respond",
     ),
     path(
-        "convo/<int:id>/summary",
+        "convo/history/<int:id>/",
+        views.ConvoHistoryView.as_view(),
+        name="convo-history",
+    ),
+    path(
+        "convo/summary/<int:id>/",
         views.ConvoSummaryView.as_view(),
         name="convo-summary",
     ),
     path(
-        "convo/<int:id>/token-count",
+        "convo/token-count/<int:id>/",
         views.ConvoTokenCountView.as_view(),
         name="convo-token-count",
     ),
     path(
-        "convo/token-count",
+        "convo/token-count/",
         views.ConvoTotalTokenCountView.as_view(),
         name="convo-total-token-count",
     ),
@@ -37,6 +65,7 @@ convo_urlpatterns = [
 
 urlpatterns = [
     *router.urls,
+    *user_urlpatterns,
     *convo_urlpatterns,
     path("ping", views.PingPongView.as_view(), name="ping"),
 ]

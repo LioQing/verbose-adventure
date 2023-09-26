@@ -40,6 +40,102 @@ class UserView(
             user.save()
 
 
+class UserMeView(views.APIView):
+    """View for getting the logged in user using token"""
+
+    serializer_class = serializers.UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        """Return the logged in user"""
+        serializer = self.serializer_class(request.user)
+        return response.Response(serializer.data)
+
+
+class UserDetailsView(views.APIView):
+    """View for getting the user details"""
+
+    serializer_class = serializers.UserDetailsSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request, id, *args, **kwargs):
+        """Return the user details"""
+        logger = logging.getLogger(__name__)
+        logger.setLevel(convo_config.log_level)
+
+        try:
+            user = models.User.objects.get(id=id)
+            adventures = models.Adventure.objects.filter(user=user)
+            serializer = self.serializer_class(
+                {
+                    "num_adventures": len(adventures),
+                    "token_count": sum(a.token_count for a in adventures),
+                    "adventures": [
+                        {"id": a.id, "token_count": a.token_count}
+                        for a in adventures
+                    ],
+                }
+            )
+            logger.debug("serializer: %s", serializer)
+            return response.Response(serializer.data)
+        except Exception as e:
+            import traceback
+
+            traceback.print_exc()
+            logger.error(e)
+            raise
+
+
+class WhitelistView(generics.CreateAPIView, views.APIView):
+    """View for whitelisting a user"""
+
+    serializer_class = serializers.WhitelistSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+    def create(self, request, *args, **kwargs):
+        """Whitelist the user"""
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            username = serializer.validated_data["username"]
+            user = models.User.objects.get(username=username)
+            user.is_whitelisted = True
+            user.save()
+            return response.Response(serializer.data)
+        except Exception as e:
+            import traceback
+
+            traceback.print_exc()
+            logger = logging.getLogger(__name__)
+            logger.error(e)
+            raise e
+
+
+class UnwhitelistView(generics.CreateAPIView, views.APIView):
+    """View for unwhitelisting a user"""
+
+    serializer_class = serializers.WhitelistSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+    def create(self, request, *args, **kwargs):
+        """Whitelist the user"""
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            username = serializer.validated_data["username"]
+            user = models.User.objects.get(username=username)
+            user.is_whitelisted = False
+            user.save()
+            return response.Response(serializer.data)
+        except Exception as e:
+            import traceback
+
+            traceback.print_exc()
+            logger = logging.getLogger(__name__)
+            logger.error(e)
+            raise e
+
+
 class PingPongView(views.APIView):
     """View for checking if the server is running"""
 
@@ -86,6 +182,42 @@ class AdventureView(
         serializer.save(user=self.request.user)
 
 
+class ConvoHistoryView(views.APIView):
+    """View for the adventure convo history"""
+
+    serializer_class = serializers.ConvoHistorySerializer
+    permission_classes = [IsWhitelisted]
+
+    def get(self, request, id, *args, **kwargs):
+        """Return the convo history"""
+        logger = logging.getLogger(__name__)
+        logger.setLevel(convo_config.log_level)
+
+        try:
+            adventure = models.Adventure.objects.get(id=id)
+
+            if adventure.user != request.user:
+                raise exceptions.AdventureNotOwnedByUserException()
+
+            length = (
+                self.request.query_params.get("username")
+                or convo_config.history_length
+            )
+
+            messages = models.Message.objects.get_latest_n_messages(
+                adventure, length
+            )
+            serializer = self.serializer_class({"history": messages})
+            logger.debug("serializer: %s", serializer)
+            return response.Response(serializer.data)
+        except Exception as e:
+            import traceback
+
+            traceback.print_exc()
+            logger.error(e)
+            raise e
+
+
 class ConvoStartView(generics.CreateAPIView, views.APIView):
     """View for initializing the adventure convo"""
 
@@ -96,7 +228,6 @@ class ConvoStartView(generics.CreateAPIView, views.APIView):
         """Return first API response of the adventure"""
         logger = logging.getLogger(__name__)
         logger.setLevel(convo_config.log_level)
-        logger.debug("request:", request)
 
         try:
             adventure = models.Adventure.objects.get(id=id)
@@ -112,11 +243,11 @@ class ConvoStartView(generics.CreateAPIView, views.APIView):
             convo = Convo(convo_coupler)
 
             init_message = convo.init_story()
-            logger.debug("init_message:", init_message)
+            logger.debug("init_message: %s", init_message)
             init_response = init_message.content
 
             serializer = self.get_serializer({"response": init_response})
-            logger.debug("serializer:", serializer)
+            logger.debug("serializer: %s", serializer)
             return response.Response(serializer.data)
         except Exception as e:
             import traceback
@@ -136,7 +267,6 @@ class ConvoRespondView(generics.CreateAPIView, views.APIView):
         """Return API response of the adventure"""
         logger = logging.getLogger(__name__)
         logger.setLevel(convo_config.log_level)
-        logger.debug("request:", request)
 
         try:
             adventure = models.Adventure.objects.get(id=id)
@@ -147,30 +277,32 @@ class ConvoRespondView(generics.CreateAPIView, views.APIView):
             convo_coupler = ConvoCoupler(adventure)
             convo = Convo(convo_coupler)
 
-            user_response: str = request.data["user_response"]
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user_response = serializer.validated_data["user_response"]
             user_message = engine_models.Message(
                 role=engine_models.Role.USER,
                 content=user_response,
             )
             user_message = convo.process_user_response(user_message)
-            logger.debug("user_message:", user_message)
+            logger.debug("user_message: %s", user_message)
 
             api_response = convo.process_api_response()
-            logger.debug("api_response:", api_response)
+            logger.debug("api_response: %s", api_response)
 
             summary_message = convo.summarize()
-            logger.debug("summary_message:", summary_message)
+            logger.debug("summary_message: %s", summary_message)
 
-            serializer = self.get_serializer(
+            serializer = self.serializer_class(
                 {
-                    "user_response": user_response,
+                    "user_response": user_message.content,
                     "api_response": api_response.content,
                     "summary": summary_message.content
                     if summary_message
                     else None,
                 }
             )
-            logger.debug("serializer:", serializer)
+            logger.debug("serializer: %s", serializer)
             return response.Response(serializer.data)
         except Exception as e:
             import traceback
@@ -190,7 +322,6 @@ class ConvoSummaryView(views.APIView):
         """Return summary of the adventure convo"""
         logger = logging.getLogger(__name__)
         logger.setLevel(convo_config.log_level)
-        logger.debug("request:", request)
 
         try:
             adventure = models.Adventure.objects.get(id=id)
@@ -201,7 +332,7 @@ class ConvoSummaryView(views.APIView):
             serializer = self.serializer_class(
                 {"summary": adventure.summary.summary}
             )
-            logger.debug("serializer:", serializer)
+            logger.debug("serializer: %s", serializer)
             return response.Response(serializer.data)
         except Exception as e:
             import traceback
@@ -221,14 +352,13 @@ class ConvoTokenCountView(views.APIView):
         """Return token count of the adventure convo"""
         logger = logging.getLogger(__name__)
         logger.setLevel(convo_config.log_level)
-        logger.debug("request:", request)
 
         try:
             adventure = models.Adventure.objects.get(id=id)
             token_count = adventure.token_count
 
             serializer = self.serializer_class({"token_count": token_count})
-            logger.debug("serializer:", serializer)
+            logger.debug("serializer: %s", serializer)
             return response.Response(serializer.data)
         except Exception as e:
             import traceback
@@ -248,14 +378,13 @@ class ConvoTotalTokenCountView(views.APIView):
         """Return token count of the adventure convo"""
         logger = logging.getLogger(__name__)
         logger.setLevel(convo_config.log_level)
-        logger.debug("request:", request)
 
         try:
             adventure = models.Adventure.objects.all()
             token_count = sum(a.token_count for a in adventure)
 
             serializer = self.serializer_class({"token_count": token_count})
-            logger.debug("serializer:", serializer)
+            logger.debug("serializer: %s", serializer)
             return response.Response(serializer.data)
         except Exception as e:
             import traceback

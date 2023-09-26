@@ -46,9 +46,7 @@ class MessageManager(Manager):
         Returns:
             The list of messages
         """
-        from .models import Adventure
-
-        curr = Adventure.objects.get(id=adventure.id).latest_message
+        curr = adventure.latest_message
         if curr is None:
             return []
 
@@ -58,7 +56,7 @@ class MessageManager(Manager):
             curr = curr.prev
             if curr is None:
                 break
-        return messages
+        return messages[::-1]
 
 
 class SummaryManager(Manager):

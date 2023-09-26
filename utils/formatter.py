@@ -25,6 +25,9 @@ class ColoredFormatter(logging.Formatter):
 
     def format(self, record):
         """Format the record"""
-        log_fmt = self.FORMATS.get(record.levelno)
+        log_fmt = (
+            self.FORMATS.get(record.levelno)
+            or self.format_head + self.format_body
+        )
         formatter = logging.Formatter(log_fmt)
         return formatter.format(record)

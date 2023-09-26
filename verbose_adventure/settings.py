@@ -10,20 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-import logging
 from datetime import timedelta
 from pathlib import Path
 
 from config.db import db_config
 from config.django import django_config
 from utils import formatter
-
-logging.basicConfig()
-logger = logging.getLogger()
-handler = logging.StreamHandler()
-handler.setFormatter(formatter.ColoredFormatter())
-logger.handlers.clear()
-logger.addHandler(handler)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -59,6 +51,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    "core.middlewares.RequestLogMiddleware",
 ]
 
 CORS_ORIGIN_WHITELIST = ["http://localhost:3000"]
@@ -169,4 +162,24 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,
     "ENFORCE_NON_BLANK_FIELDS": True,
+}
+
+# Logging
+
+LOGGING = {
+    "version": 1,
+    "formatters": {
+        "colored": {
+            "()": formatter.ColoredFormatter,
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "colored",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+    },
 }
