@@ -62,9 +62,13 @@ class Adventure(models.Model):
         blank=True,
         on_delete=models.CASCADE,
     )
-    system_message = models.TextField(default=adventure_config.system_message)
-    start_message = models.TextField(default=adventure_config.start_message)
-    iteration = models.PositiveIntegerField(default=0)
+    system_message = models.TextField(
+        default=adventure_config.system_message, blank=True
+    )
+    start_message = models.TextField(
+        default=adventure_config.start_message, blank=True
+    )
+    iteration = models.PositiveIntegerField(default=0, blank=True)
 
     @property
     def token_count(self) -> int:
