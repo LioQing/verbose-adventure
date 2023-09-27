@@ -24,20 +24,21 @@ class RequestLogMiddleware:
             "request_body": request.body,
         }
 
-        response = self.get_response(request)
+        if request.method != "DELETE":
+            response = self.get_response(request)
 
-        if response["content-type"] == "application/json":
-            if getattr(response, "streaming", False):
-                response_body = "<<<Streaming>>>"
+            if response["content-type"] == "application/json":
+                if getattr(response, "streaming", False):
+                    response_body = "<<<Streaming>>>"
+                else:
+                    response_body = response.content
             else:
-                response_body = response.content
-        else:
-            response_body = "<<<Not JSON>>>"
+                response_body = "<<<Not JSON>>>"
 
-        log_data = log_data | {
-            "response_status": response.status_code,
-            "response_body": response_body,
-        }
+            log_data = log_data | {
+                "response_status": response.status_code,
+                "response_body": response_body,
+            }
 
         self.logger.debug("%s", log_data)
 
