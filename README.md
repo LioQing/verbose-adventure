@@ -12,17 +12,31 @@ flowchart LR
         saveMessage1[(Chatcmpl & Choice\nMessage)]
     end
 
-    subgraph "Do API response (do_api_response)"
+    subgraph "Process API response (process_api_response)"
         history[(Message history\nSummary message\nSystem message)]
         saveMessage3[(Chatcmpl & Choice\nMessage)]
         api2[Get response w/ API]
     end
 
-    subgraph "Do user response (do_user_response)"
+    subgraph "Process user response (process_user_response)"
         userInput[/User input/]
+        saveUser[Save user message]
         saveMessage2[(Message)]
         stopQ{Stop?\nshould_stop}
-        saveUser[Save user message]
+        rollQ{Should roll?\nWhat and requirement?\nw/ API}
+        saveRollRequirement[Save roll requirement]
+        saveRollRequirementDb[(Roll requirement)]
+    end
+
+    subgraph "Confirm Roll Dice (confirm_roll_dice)"
+        userConfirm[/User confirm/]
+        userConfirmQ{User confirm?}
+        saveUser2[Save user message]
+        saveMessage4[(Message)]
+    end
+
+    subgraph "Rolling Dice (roll_dice)"
+        rollValue[/Roll value and successfulness/]
     end
 
     subgraph "Summarize (summarize)"
@@ -31,10 +45,12 @@ flowchart LR
         summarize[Summarize /w API]
         saveSummary[(Chatcmpl & Choice\nSummary message)]
     end
-    stop([Stop])
+
     start([Start])
     output1[/Output API/]
     output2[/Output API/]
+    output3[/Output roll confirmation/]
+    stop([Stop])
 
     start --> startStory
     initSys -.get_init_message.-> startStory
@@ -48,12 +64,28 @@ flowchart LR
     api2 -.save_api_response.-> saveMessage3
     api2 --> output2
 
-    stopQ -- No --> saveUser
+    stopQ -- No --> rollQ
     stopQ -- Yes --> stop
+
+    rollQ -- No --> saveUser
 
     saveUser --> api2
     history -.get_built_messages.-> api2
     saveUser -.save_user_response.-> saveMessage2
+
+    rollQ -- Yes --> saveRollRequirement
+
+    saveRollRequirement --> output3
+    saveRollRequirement -.save_roll_requirement.-> saveRollRequirementDb
+    output3 --> userConfirm
+    userConfirm --> userConfirmQ
+
+    userConfirmQ -- No --> userInput
+    userConfirmQ -- Yes --> saveUser2
+    saveUser2 -.save_user_response.-> saveMessage4
+
+    saveUser2 --> rollValue
+    rollValue --> api2
 
     summarize --> userInput
     summarizeQ -- No --> userInput

@@ -157,7 +157,7 @@ class Convo:
 
     def process_user_response(self, message: Message) -> Optional[Message]:
         """
-        Do the user response
+        Process the user response
 
         Args:
             message: The user message
@@ -178,7 +178,7 @@ class Convo:
         return message
 
     def process_api_response(self) -> Message:
-        """Do the API response."""
+        """Process the API response."""
         self.logger.info("Doing API response")
 
         messages = self.coupler.get_built_messages(convo_config.history_length)
