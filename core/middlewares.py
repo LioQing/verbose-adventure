@@ -1,5 +1,7 @@
 import logging
 
+from django.http import HttpRequest, HttpResponse
+
 from config.convo import convo_config
 
 
@@ -14,18 +16,19 @@ class RequestLogMiddleware:
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(convo_config.log_level)
 
-    def __call__(self, request):
+    def __call__(self, request: HttpRequest):
         """Log the request and response"""
         log_data = {
             "user": request.user.pk,
             "remote_address": request.META["REMOTE_ADDR"],
             "request_method": request.method,
             "request_path": request.get_full_path(),
+            "request_headers": request.headers,
             "request_body": request.body,
         }
 
         if request.method != "DELETE":
-            response = self.get_response(request)
+            response: HttpResponse = self.get_response(request)
 
             if response["content-type"] == "application/json":
                 if getattr(response, "streaming", False):
