@@ -15,13 +15,23 @@ class ConvoCoupler(BaseConvoCoupler):
     chatcmpl: List[Chatcmpl]
     summary: Optional[str]
 
-    def __init__(self):
+    system_message: str
+    start_message: str
+
+    def __init__(
+        self,
+        system_message: Optional[str] = None,
+        start_message: Optional[str] = None,
+    ):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(adventure_config.log_level)
 
         self.message = []
         self.chatcmpl = []
         self.summary = None
+
+        self.system_message = system_message or adventure_config.system_message
+        self.start_message = start_message or adventure_config.start_message
 
         self.logger.info("ConvoCoupler created")
 
@@ -45,10 +55,7 @@ class ConvoCoupler(BaseConvoCoupler):
         self.logger.info("Getting init message")
         return Message(
             role=Role.SYSTEM,
-            content=(
-                f"{adventure_config.system_message} "
-                f"{adventure_config.start_message}"
-            ),
+            content=f"{self.system_message} {self.start_message}",
         )
 
     def save_api_response(self, chatcmpl: Chatcmpl) -> Message:
@@ -66,7 +73,7 @@ class ConvoCoupler(BaseConvoCoupler):
             adventure_config.default_choice_index
         ].message
         self.message.append(chosen)
-        self.logger.info(f"API response saved: {chosen}")
+        self.logger.debug(f"API response saved: {chosen}")
 
         return chosen
 
@@ -78,7 +85,7 @@ class ConvoCoupler(BaseConvoCoupler):
             message: The user message
         """
         self.message.append(message)
-        self.logger.info(f"User response saved: {message}")
+        self.logger.debug(f"User response saved: {message}")
 
     def get_built_messages(self, history_length: int) -> List[Message]:
         """
@@ -97,7 +104,7 @@ class ConvoCoupler(BaseConvoCoupler):
         messages.append(
             Message(
                 role=Role.SYSTEM,
-                content=adventure_config.system_message
+                content=self.system_message
                 + (f" {self.summary}" if self.summary else ""),
             )
         )
@@ -146,7 +153,7 @@ class ConvoCoupler(BaseConvoCoupler):
             adventure_config.default_choice_index
         ].message
         self.summary = chosen.content
-        self.logger.info(f"Summary response saved: {self.summary}")
+        self.logger.debug(f"Summary response saved: {self.summary}")
 
         return chosen
 
@@ -185,11 +192,15 @@ class Adventure:
     convo_coupler: ConvoCoupler
     convo: Convo
 
-    def __init__(self):
+    def __init__(
+        self,
+        system_message: Optional[str] = None,
+        start_message: Optional[str] = None,
+    ):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(adventure_config.log_level)
 
-        self.convo_coupler = ConvoCoupler()
+        self.convo_coupler = ConvoCoupler(system_message, start_message)
         self.convo = Convo(self.convo_coupler)
 
         self.logger.info("Adventure created")
@@ -201,29 +212,49 @@ class Adventure:
         init_story = self.convo.init_story()
         self.print_assistant_response(init_story)
 
-        while True:
-            try:
-                user_input = self.get_user_input()
-                user_message = Message(role=Role.USER, content=user_input)
-                user_response = self.convo.process_user_response(user_message)
-
-                if user_response is None:
-                    print("Session ended")
-                    break
-
-                api_response = self.convo.process_api_response()
-
-                summary = self.convo.summarize()
-                if summary:
-                    self.print_summary_response(summary)
-
-                self.print_assistant_response(api_response)
-            except Exception as e:
-                print(traceback.format_exc())
-                print(f"Error: {e}")
+        while self.user_flow():
+            pass
 
         self.logger.info("Adventure ended")
         print(f"Used {self.convo_coupler.token_used} tokens")
+
+    def init_adventure(self):
+        """Initialize the adventure"""
+        self.logger.info("Initializing adventure")
+
+        init_story = self.convo.init_story()
+        self.print_assistant_response(init_story)
+
+        self.logger.info("Adventure initialized")
+
+    def user_flow(self) -> bool:
+        """
+        Do the user flow
+
+        Returns:
+            True if the conversation should continue, False otherwise
+        """
+        try:
+            user_input = self.get_user_input()
+            user_message = Message(role=Role.USER, content=user_input)
+            user_response = self.convo.process_user_response(user_message)
+
+            if user_response is None:
+                print("Session ended")
+                return False
+
+            api_response = self.convo.process_api_response()
+
+            summary = self.convo.summarize()
+            if summary:
+                self.print_summary_response(summary)
+
+            self.print_assistant_response(api_response)
+        except Exception as e:
+            print(traceback.format_exc())
+            print(f"Error: {e}")
+
+        return True
 
     def get_user_input(self) -> str:
         """Get user input"""

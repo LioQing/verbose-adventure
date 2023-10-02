@@ -251,10 +251,10 @@ class Convo:
             messages=[m.model_dump() for m in messages],
         )
 
-        self.logger.info(f"Calling API with request: {request}")
+        self.logger.debug(f"Calling API with request: {request}")
 
         response = openai.ChatCompletion.create(**request.model_dump())
         response = Chatcmpl(**response)
 
-        self.logger.info(f"API response: {response}")
+        self.logger.debug(f"API response: {response}")
         return response
