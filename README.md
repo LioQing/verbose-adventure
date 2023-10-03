@@ -4,6 +4,35 @@ This is demo project for GPT interactive story generation.
 
 ## System Flow Diagram
 
+### Scene
+
+```mermaid
+flowchart LR
+    start((Start))
+    stop((Stop))
+    adventuresDB[(Adventures)]
+    adventuresDB1[(Adventures)]
+    selection[/Adventure selection/]
+    exitQ{Exit?}
+
+    subgraph "Adventure"
+        userflow[User flow]
+        construct[Constructor]
+    end
+
+    start --> construct
+    construct -.save_adventures.-> adventuresDB
+    construct --> selection
+    selection --> exitQ
+
+    exitQ -- Yes --> stop
+    adventuresDB1 -.get_adventures.-> userflow
+    exitQ -- No --> userflow
+    userflow --> selection
+```
+
+### Adventure
+
 ```mermaid
 flowchart LR
     subgraph "Initialize story (init_story)"
@@ -65,14 +94,22 @@ flowchart LR
 ## Entity Relationship Diagram
 
 ```mermaid
-
 erDiagram
     User {
         Boolean is_whitelisted
     }
 
+    Summary {
+        Text summary
+    }
+
+    Scene {
+        ManyToOne(User) user FK
+    }
+
     Adventure {
         ManyToOne(User) user FK
+        ManyToOne(Scene) scene FK "Nullable"
         OneToOne(Summary) summary FK
         OneToOne(Message) latest_message FK "Nullable"
         Text system_message
@@ -93,10 +130,6 @@ erDiagram
         PositiveInteger prompt_tokens
     }
 
-    Summary {
-        Text summary
-    }
-
     Message {
         Datetime timestamp PK "Partial PK"
         ManyToOne(Adventure) adventure FK,PK "Partial PK"
@@ -115,6 +148,10 @@ erDiagram
     }
 
     User ||--o{ Adventure : plays
+
+    User ||--o{ Scene : plays
+
+    Scene ||--o{ Adventure : has
 
     Message }o--o{ Message : prev
 

@@ -209,8 +209,7 @@ class Adventure:
         """Start the adventure"""
         self.logger.info("Adventure started")
 
-        init_story = self.convo.init_story()
-        self.print_assistant_response(init_story)
+        self.init_adventure()
 
         while self.user_flow():
             pass
