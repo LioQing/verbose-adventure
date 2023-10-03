@@ -11,7 +11,7 @@ flowchart LR
     start((Start))
     stop((Stop))
     adventuresDB[(Adventures)]
-    adventuresDB1[(Adventures)]
+    adventureDB[(Adventure)]
     selection[/Adventure selection/]
     exitQ{Exit?}
 
@@ -26,7 +26,7 @@ flowchart LR
     selection --> exitQ
 
     exitQ -- Yes --> stop
-    adventuresDB1 -.get_adventures.-> userflow
+    adventureDB -.get_adventure.-> userflow
     exitQ -- No --> userflow
     userflow --> selection
 ```
