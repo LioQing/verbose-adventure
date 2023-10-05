@@ -77,7 +77,10 @@ scene = Scene(
     name=f"{POWER_PLANT_NAME} Power Plant",
     system_message=(
         "The conversation is related to an explosion accident at the"
-        f" {POWER_PLANT_NAME} power plant."
+        f" {POWER_PLANT_NAME} power plant. You should respond using one or two"
+        " sentences, in a concise and clear way. Do not use any word not"
+        " suitable for family friendly content, use synonyms that are less"
+        " violent or direct, such as casualties or pass away."
     ),
     npcs=[
         SceneNpc(
@@ -168,7 +171,7 @@ scene = Scene(
                 Knowledge(
                     name="understanding_of_other_characters",
                     description=(
-                        "his knowledge and understanding_of_other_characters"
+                        "his knowledge and understanding of other characters"
                         " involved in the accident"
                     ),
                     knowledge=(
@@ -239,7 +242,7 @@ scene = Scene(
                 Knowledge(
                     name="understanding_of_other_characters",
                     description=(
-                        "her knowledge and understanding_of_other_characters"
+                        "her knowledge and understanding of other characters"
                         " involved in the accident"
                     ),
                     knowledge=(
@@ -308,7 +311,7 @@ scene = Scene(
                 Knowledge(
                     name="understanding_of_other_characters",
                     description=(
-                        "his knowledge and understanding_of_other_characters"
+                        "his knowledge and understanding of other characters"
                         " involved in the accident"
                     ),
                     knowledge=(
@@ -375,7 +378,7 @@ scene = Scene(
                 Knowledge(
                     name="understanding_of_other_characters",
                     description=(
-                        "his knowledge and understanding_of_other_characters"
+                        "his knowledge and understanding of other characters"
                         " involved in the accident"
                     ),
                     knowledge=(
@@ -432,7 +435,7 @@ scene = Scene(
                 Knowledge(
                     name="understanding_of_other_characters",
                     description=(
-                        "his knowledge and understanding_of_other_characters"
+                        "his knowledge and understanding of other characters"
                         " involved in the accident"
                     ),
                     knowledge=(
@@ -495,7 +498,7 @@ scene = Scene(
                 Knowledge(
                     name="understanding_of_other_characters",
                     description=(
-                        "her knowledge and understanding_of_other_characters"
+                        "her knowledge and understanding of other characters"
                         " involved in the accident"
                     ),
                     knowledge=(

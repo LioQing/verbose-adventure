@@ -39,6 +39,11 @@ def call_api(messages: List[Message]) -> Chatcmpl:
     response = Chatcmpl(**response)
 
     logger.debug(f"API response: {response}")
+
+    if response.choices[0].message.content is None:
+        logger.error("API response message is None")
+        raise ValueError("API response message is None")
+
     return response
 
 
@@ -57,6 +62,10 @@ def call_api_function(messages: List[Message], function: Function) -> Chatcmpl:
 
     response = openai.ChatCompletion.create(**request)
     response = Chatcmpl(**response)
+
+    if response.choices[0].message.function_call is None:
+        logger.error("API Function is not called.")
+        raise ValueError("API Function is not called.")
 
     logger.debug(f"API response: {response}")
     return response

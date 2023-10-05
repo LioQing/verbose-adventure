@@ -238,8 +238,9 @@ class SceneNpcConvoCoupler(ConvoCoupler):
     """
 
     logger: logging.Logger
-    system_message: str
+    scene_system_message: str
     npc: SceneNpc
+    knowledge_selection_token_used: int
 
     def __init__(self, system_message: str, npc: SceneNpc):
         super().__init__(
@@ -250,10 +251,21 @@ class SceneNpcConvoCoupler(ConvoCoupler):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(adventure_config.log_level)
 
-        self.system_message = system_message
+        self.scene_system_message = system_message
         self.npc = npc
+        self.knowledge_selection_token_used = 0
 
-        self.logger.info("SceneNpcConvoCoupler created")
+        self.logger.info(f"SceneNpcConvoCoupler for {npc.name} created")
+
+    @property
+    def token_used(self) -> int:
+        """
+        Get the number of tokens used
+
+        Returns:
+            The number of tokens used
+        """
+        return super().token_used + self.knowledge_selection_token_used
 
     def get_built_messages(self, history_length: int) -> List[Message]:
         """
@@ -273,6 +285,18 @@ class SceneNpcConvoCoupler(ConvoCoupler):
         messages[0].content += f" {extra_knowledge}"
 
         return messages
+
+    def should_stop(self, message: Message) -> bool:
+        """
+        Return if the conversation should stop
+
+        Args:
+            message: The user message
+
+        Returns:
+            True if the conversation should stop, False otherwise
+        """
+        return message.content == "\\back"
 
     def get_knowledge(self, convo_messages: List[Message]) -> str:
         """
@@ -329,11 +353,10 @@ class SceneNpcConvoCoupler(ConvoCoupler):
 
         response = call_api_function(messages, function)
 
+        self.knowledge_selection_token_used += response.usage.total_tokens
+
         # Parse the arguments
-        if (
-            response.choices[0].message.function_call is None
-            or response.choices[0].message.function_call.name != function.name
-        ):
+        if response.choices[0].message.function_call.name != function.name:
             self.logger.warning("Function is not called.")
             return ""
 
