@@ -12,6 +12,7 @@ flowchart LR
     stop((Stop))
     adventuresDB[(Adventures)]
     adventureDB[(Adventure)]
+    adventuresDB1[(Adventures)]
     selection[/Adventure selection/]
     exitQ{Exit?}
 
@@ -21,7 +22,11 @@ flowchart LR
     end
 
     start --> construct
-    construct -.save_adventures.-> adventuresDB
+    start --> construct
+    start --> construct
+    construct -.add_adventure.-> adventuresDB
+    adventuresDB ~~~ adventuresDB1
+    adventuresDB1 -.get_adventures.-> selection
     construct --> selection
     selection --> exitQ
 

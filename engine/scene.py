@@ -1,7 +1,7 @@
 import abc
 import logging
 import traceback
-from typing import Callable, List, Optional
+from typing import List, Optional
 
 from config.adventure import adventure_config
 from engine.adventure import Adventure
@@ -20,7 +20,6 @@ class BaseSceneCoupler(abc.ABC):
 
         Returns:
             The Adventure at this index, or an empty Optional otherwise.
-
         """
         pass
 
@@ -31,40 +30,6 @@ class BaseSceneCoupler(abc.ABC):
 
         Args:
             adventure: The Adventure to Add
-
-        """
-    pass
-
-    @abc.abstractclassmethod
-    def has_adventure(self, index: int) -> bool:
-        """
-        Checks if there is an Adventure at the index.
-
-        Args;
-            index: The index to check
-
-        Returns:
-            True if there is an Adventuere at this index, False otherwise
-        """
-        pass
-
-    @abc.abstractclassmethod
-    def num_adventures(self) -> int:
-        """
-        Gets the number of Adventure instances.
-
-        Returns:
-            The number of instances
-        """
-        pass
-
-    @abc.abstractclassmethod
-    def for_each(self, func: Callable[[Adventure], None]):
-        """
-        Runs the given function on each of the adventures.
-
-        Args:
-            func: The function to execute
         """
         pass
 
@@ -85,22 +50,10 @@ class SceneCoupler(BaseSceneCoupler):
     logger: logging.Logger
     adventures: List[Adventure]
 
-    def __init__(
-        self,
-        adventures: List[Adventure] = []
-    ):
+    def __init__(self, adventures: List[Adventure] = []):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(adventure_config.log_level)
         self.adventures = adventures
-
-    def num_adventures(self) -> int:
-        """
-        Gets the number of Adventure instances.
-
-        Returns:
-            The number of instances
-        """
-        return len(self.adventures)
 
     def get_adventure(self, index: int) -> Optional[Adventure]:
         """
@@ -111,34 +64,11 @@ class SceneCoupler(BaseSceneCoupler):
 
         Returns:
             The Adventure at this index, or an empty Optional otherwise.
-
         """
-        if index >= self.num_adventures():
+        if index >= len(self.adventures):
             return None
         else:
             return self.adventures[index]
-
-    def has_adventure(self, index: int) -> bool:
-        """
-        Checks if there is an Adventure at the index.
-
-        Args;
-            index: The index to check
-
-        Returns:
-            True if there is an Adventuere at this index, False otherwise
-        """
-        return self.num_adventures() < index
-
-    def for_each(self, func: Callable[[Adventure], None]):
-        """
-        Runs the given function on each of the adventures.
-
-        Args:
-            func: The function to execute
-        """
-        for adventure in self.adventures:
-            func(adventure)
 
     def get_adventures(self) -> List[Adventure]:
         """
@@ -155,7 +85,6 @@ class SceneCoupler(BaseSceneCoupler):
 
         Args:
             adventure: The Adventure to Add
-
         """
         self.adventures.append(adv)
 
@@ -167,10 +96,7 @@ class Scene:
     scene_coupler: SceneCoupler
     num_npcs: int
 
-    def __init__(
-            self,
-            num_npcs: int
-    ):
+    def __init__(self, num_npcs: int):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(adventure_config.log_level)
         self.scene_coupler = SceneCoupler()
@@ -193,9 +119,10 @@ class Scene:
             pass
 
         self.logger.info("Scene ended.")
-        tokens_used = sum(map(
-            lambda adv: adv.convo_coupler.token_used,
-            self.scene_coupler.get_adventures()))
+        tokens_used = sum(
+            adv.convo_coupler.token_used
+            for adv in self.scene_coupler.get_adventures()
+        )
         print(f"Used {tokens_used} tokens.")
 
     def user_flow(self) -> bool:
@@ -213,6 +140,7 @@ class Scene:
             if index == -1:
                 print("Exiting per user request.")
                 return False
+
             optional_adv = self.scene_coupler.get_adventure(index)
             if optional_adv is None:
                 print("No such adventure!")
@@ -221,6 +149,7 @@ class Scene:
         except Exception as e:
             print(traceback.format_exc())
             print(f"Error: {e}")
+
         return True
 
     def get_user_input(self) -> str:
