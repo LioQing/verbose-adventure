@@ -6,7 +6,7 @@ from config.convo import convo_config
 from engine import models as engine_models
 from engine.convo import BaseConvoCoupler
 
-from . import models
+from .. import models
 
 
 class ConvoCoupler(BaseConvoCoupler):

@@ -8,7 +8,7 @@ from engine.convo import Convo
 from rest_auth.permissions import IsWhitelisted
 
 from . import exceptions, models, serializers
-from .convo_coupler import ConvoCoupler
+from .couplers.convo import ConvoCoupler
 
 
 class UserView(

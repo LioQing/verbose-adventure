@@ -10,22 +10,24 @@ This is demo project for GPT interactive story generation.
 flowchart LR
     start((Start))
     stop((Stop))
-    adventuresDB[(Adventures)]
-    adventureDB[(Adventure)]
-    adventuresDB1[(Adventures)]
-    selection[/Adventure selection/]
-    exitQ{Exit?}
 
-    subgraph "Adventure"
-        userflow[User flow]
-        construct[Constructor]
+    subgraph "Process User Selection (process_user_selection)"
+        adventuresDB1[(Adventures)]
+        selection[/Adventure selection/]
+        exitQ{Exit?}
     end
 
-    start --> construct
-    start --> construct
-    start --> construct
+    subgraph "Initialize Scene (init_scene)"
+        subgraph "Adventure"
+            userflow[User flow]
+            construct[Constructor]
+        end
+    adventuresDB[(Adventures)]
+    adventureDB[(Adventure)]
+    end
+
+    start ==> construct
     construct -.add_adventure.-> adventuresDB
-    adventuresDB ~~~ adventuresDB1
     adventuresDB1 -.get_adventures.-> selection
     construct --> selection
     selection --> exitQ
@@ -46,13 +48,13 @@ flowchart LR
         saveMessage1[(Chatcmpl & Choice\nMessage)]
     end
 
-    subgraph "Do API response (do_api_response)"
+    subgraph "Process API response (process_api_response)"
         history[(Message history\nSummary message\nSystem message)]
         saveMessage3[(Chatcmpl & Choice\nMessage)]
         api2[Get response w/ API]
     end
 
-    subgraph "Do user response (do_user_response)"
+    subgraph "Process user response (process_user_response)"
         userInput[/User input/]
         saveMessage2[(Message)]
         stopQ{Stop?\nshould_stop}

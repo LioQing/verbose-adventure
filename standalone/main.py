@@ -2,7 +2,7 @@ import logging
 
 from utils import formatter
 
-from . import scene  # , adventure
+from . import scene
 
 logging.basicConfig()
 logger = logging.getLogger()
@@ -14,16 +14,7 @@ logger.addHandler(handler)
 
 def main():
     """Main entry point"""
-    """adv = adventure.Adventure(
-        system_message=(
-            "You are an assistant to help the user with any information they"
-            " need."
-        ),
-        start_message="You start by greeting the user.",
-    )
-    adv.run()
-    """
-    sc = scene.Scene(5)
+    sc = scene.SceneRunner()
     sc.run()
 
 
