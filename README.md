@@ -6,13 +6,15 @@ This is demo project for GPT interactive story generation.
 
 ### Scene
 
+In Scene, NPC is an equivalent name for Adventure.
+
 ```mermaid
 flowchart LR
     start((Start))
     stop((Stop))
 
     subgraph "Process User Selection (process_user_selection)"
-        adventuresDB1[(Adventures)]
+        adventuresDB1[(NPCs)]
         selection[/Adventure selection/]
         exitQ{Exit?}
     end
@@ -22,18 +24,18 @@ flowchart LR
             userflow[User flow]
             construct[Constructor]
         end
-    adventuresDB[(Adventures)]
-    adventureDB[(Adventure)]
+    adventuresDB[(NPCs)]
+    adventureDB[(NPC)]
     end
 
     start ==> construct
-    construct -.add_adventure.-> adventuresDB
-    adventuresDB1 -.get_adventures.-> selection
+    construct -.add_npc.-> adventuresDB
+    adventuresDB1 -.get_npcs.-> selection
     construct --> selection
     selection --> exitQ
 
     exitQ -- Yes --> stop
-    adventureDB -.get_adventure.-> userflow
+    adventureDB -.get_npc.-> userflow
     exitQ -- No --> userflow
     userflow --> selection
 ```

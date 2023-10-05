@@ -2,7 +2,7 @@ import logging
 
 from utils import formatter
 
-from . import scene
+from .scene import SceneRunner
 
 logging.basicConfig()
 logger = logging.getLogger()
@@ -14,8 +14,10 @@ logger.addHandler(handler)
 
 def main():
     """Main entry point"""
-    sc = scene.SceneRunner()
-    sc.run()
+    from data.scene.power_plant import scene as scene_data
+
+    scene = SceneRunner(scene_data)
+    scene.run()
 
 
 if __name__ == "__main__":

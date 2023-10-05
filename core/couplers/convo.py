@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional, Tuple
+from typing import List
 
 from config.adventure import adventure_config
 from config.convo import convo_config
@@ -134,7 +134,7 @@ class ConvoCoupler(BaseConvoCoupler):
 
     def get_summary_messages(
         self, history_length: int
-    ) -> Tuple[List[engine_models.Message], Optional[engine_models.Message]]:
+    ) -> List[engine_models.Message]:
         """
         Get the message history and previous summary for the summary
 
@@ -142,27 +142,53 @@ class ConvoCoupler(BaseConvoCoupler):
             n: The number of messages to build from history
 
         Returns:
-            The list of messages history
-            Optional previous summary message
+            The list of messages (summary system message, summary message,
+            history in JSON format)
         """
-        self.logger.info(
-            "Getting message history and previous summary for summary"
-        )
+        self.logger.info("Getting messages for summary")
 
-        history = [
+        messages = []
+
+        if self.adventure.summary is None:
+            messages.append(
+                engine_models.Message(
+                    role=engine_models.Role.SYSTEM,
+                    content=adventure_config.summary_system_message_no_prev,
+                )
+            )
+        else:
+            messages.append(
+                engine_models.Message(
+                    role=engine_models.Role.SYSTEM,
+                    content=adventure_config.summary_system_message,
+                )
+            )
+            messages.append(
+                engine_models.Message(
+                    role=engine_models.Role.ASSISTANT,
+                    content=(
+                        "The previous summary is:"
+                        f" {self.adventure.summary.summary}"
+                    ),
+                )
+            )
+
+        json_history_messages = [
             m.to_engine_message()
             for m in models.Message.objects.get_latest_n_messages(
                 self.adventure, history_length
             )
         ]
-
-        if self.adventure.summary is None:
-            return history, None
-
-        return history, engine_models.Message(
-            role=engine_models.Role.ASSISTANT,
-            content=self.adventure.summary.summary,
+        messages.append(
+            engine_models.Message(
+                role=engine_models.Role.ASSISTANT,
+                content=(
+                    f"The conversation messages are: {json_history_messages}"
+                ),
+            )
         )
+
+        return messages
 
     def save_summary_response(
         self, chatcmpl: engine_models.Chatcmpl

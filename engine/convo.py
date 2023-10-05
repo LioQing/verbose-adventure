@@ -1,13 +1,13 @@
 import abc
 import logging
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 import openai
 
 from config.convo import convo_config
 from config.openai import open_ai_config
 
-from .models import Chatcmpl, ChatcmplRequest, Message, Role
+from .models import Chatcmpl, ChatcmplRequest, Message
 
 openai.api_key = open_ai_config.key
 openai.api_base = open_ai_config.url
@@ -65,9 +65,7 @@ class BaseConvoCoupler(abc.ABC):
         pass
 
     @abc.abstractclassmethod
-    def get_summary_messages(
-        self, history_length: int
-    ) -> Tuple[List[Message], Optional[Message]]:
+    def get_summary_messages(self, history_length: int) -> List[Message]:
         """
         Get the message history and previous summary for the summary
 
@@ -75,8 +73,8 @@ class BaseConvoCoupler(abc.ABC):
             n: The number of messages to build from history
 
         Returns:
-            The list of messages history
-            Optional previous summary message
+            The list of messages (summary system message, summary message,
+            history in JSON format)
         """
         pass
 
@@ -205,35 +203,9 @@ class Convo:
             self.logger.info("Conversation should not be summarized")
             return None
 
-        messages = []
-
-        # History
-        history, prev_summary = self.coupler.get_summary_messages(
+        # Summary messages
+        messages = self.coupler.get_summary_messages(
             convo_config.history_length
-        )
-
-        if prev_summary:
-            history.insert(0, prev_summary)
-
-        history = [m.model_dump() for m in history]
-        messages.append(
-            Message(
-                role=Role.SYSTEM,
-                content=str(history),
-            )
-        )
-
-        # System message
-        system_message = convo_config.summary_system_message
-        if prev_summary is None:
-            system_message = convo_config.summary_system_message_no_prev
-
-        messages.insert(
-            0,
-            Message(
-                role=Role.SYSTEM,
-                content=system_message,
-            ),
         )
 
         # Call API

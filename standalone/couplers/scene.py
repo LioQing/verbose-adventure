@@ -12,14 +12,19 @@ class SceneCoupler(BaseSceneCoupler):
     """The concrete SceneCoupler implementation."""
 
     logger: logging.Logger
-    adventures: List[Tuple[Adventure, SceneNpc]]
+    npcs: List[Tuple[Adventure, SceneNpc]]
 
-    def __init__(self, adventures: List[Adventure] = []):
+    @property
+    def token_used(self) -> int:
+        """Gets the number of tokens used for all NPC in the scene"""
+        return sum(adv[0].convo_coupler.token_used for adv in self.npcs)
+
+    def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(adventure_config.log_level)
-        self.adventures = adventures
+        self.npcs = []
 
-    def get_adventure(self, index: int) -> Optional[Callable]:
+    def get_npc_user_flow(self, index: int) -> Optional[Callable]:
         """
         Gets the function of the NPC to run the user flow at this index.
 
@@ -30,26 +35,34 @@ class SceneCoupler(BaseSceneCoupler):
             The function to run the user flow for this NPC,
             or None otherwise.
         """
-        if index >= len(self.adventures):
+        if index >= len(self.npcs):
             return None
         else:
-            return self.adventures[index][0].user_flow
+            return self.npcs[index][0].user_flow
 
-    def create_adventure(self, npc: SceneNpc):
+    def create_npc(self, npc: SceneNpc):
         """
         Adds an NPC to the Scene.
 
         Args:
             adventure: The NPC to represent the Adventure
         """
-        # TODO: parse NPC to Adventure
-        self.adventures.append((Adventure(), npc))
+        adv = self.__parse_npc_to_adventure(npc)
+        self.npcs.append((adv, npc))
 
-    def get_adventures(self) -> List[SceneNpc]:
+    def get_npcs(self) -> List[SceneNpc]:
         """
         Gets the list of NPCs in the SceneCoupler.
 
         Returns:
             The list of NPCs
         """
-        return [adv[1] for adv in self.adventures]
+        return [adv[1] for adv in self.npcs]
+
+    def __parse_npc_to_adventure(self, npc: SceneNpc) -> Adventure:
+        """Parses an NPC to an Adventure"""
+        # TODO: Improve ths
+        return Adventure(
+            system_message=npc.character,
+            start_message="",
+        )

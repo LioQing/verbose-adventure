@@ -3,6 +3,7 @@ import logging
 from typing import Callable, List, Optional
 
 from config.adventure import adventure_config
+from data.scene import Scene as SceneData
 from data.scene import SceneNpc
 
 
@@ -14,7 +15,7 @@ class BaseSceneCoupler(abc.ABC):
     """
 
     @abc.abstractclassmethod
-    def get_adventure(self, index: int) -> Optional[Callable]:
+    def get_npc_user_flow(self, index: int) -> Optional[Callable]:
         """
         Gets the function to run the user flow at this index if it exists.
 
@@ -28,7 +29,7 @@ class BaseSceneCoupler(abc.ABC):
         pass
 
     @abc.abstractclassmethod
-    def create_adventure(self, npc: SceneNpc):
+    def create_npc(self, npc: SceneNpc):
         """
         Adds an NPC to the Scene.
 
@@ -38,7 +39,7 @@ class BaseSceneCoupler(abc.ABC):
         pass
 
     @abc.abstractclassmethod
-    def get_adventures(self) -> List[SceneNpc]:
+    def get_npcs(self) -> List[SceneNpc]:
         """
         Gets the list of NPCs in the SceneCoupler.
 
@@ -53,24 +54,21 @@ class Scene:
 
     logger: logging.Logger
     coupler: BaseSceneCoupler
-    num_npcs: int
+    data: SceneData
 
-    def __init__(self, coupler: BaseSceneCoupler, num_npcs: int):
+    def __init__(self, coupler: BaseSceneCoupler, data: SceneData):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(adventure_config.log_level)
 
         self.coupler = coupler
-        self.num_npcs = num_npcs
+        self.data = data
 
         self.logger.info("Scene created.")
 
     def init_scene(self):
         """Initializes a scene with the specified number of NPCs."""
-        for i in range(self.num_npcs):
-            # TODO: parse NPC data
-            self.coupler.create_adventure(
-                SceneNpc(name=f"NPC {i}", character="", knowledges=[])
-            )
+        for npc in self.data.npcs:
+            self.coupler.create_npc(npc)
 
     def process_user_selection(self, index: int) -> bool:
         """
@@ -86,7 +84,7 @@ class Scene:
             print("Exiting per user request.")
             return False
 
-        if user_flow := self.coupler.get_adventure(index):
+        if user_flow := self.coupler.get_npc_user_flow(index):
             user_flow()
         else:
             print("Invalid index.")

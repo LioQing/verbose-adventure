@@ -2,6 +2,7 @@ import logging
 import traceback
 
 from config.adventure import adventure_config
+from data.scene import Scene as SceneData
 from engine.scene import Scene
 
 from .couplers.scene import SceneCoupler
@@ -14,12 +15,12 @@ class SceneRunner:
     scene_coupler: SceneCoupler
     scene: Scene
 
-    def __init__(self):
+    def __init__(self, scene_data: SceneData):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(adventure_config.log_level)
 
         self.scene_coupler = SceneCoupler()
-        self.scene = Scene(self.scene_coupler, 5)
+        self.scene = Scene(self.scene_coupler, scene_data)
 
         self.logger.info("SceneRunner created.")
 
@@ -32,6 +33,7 @@ class SceneRunner:
             pass
 
         self.logger.info("Scene ended.")
+        print(f"Used {self.scene_coupler.token_used} tokens")
 
     def init_scene_runner(self):
         """Initializes the SceneRunner."""
@@ -47,9 +49,9 @@ class SceneRunner:
             True if the user requests exiting, False otherwise.
         """
         print("Type the index of the NPC you want to talk to, or 0 to exit.")
-        print("0. Exit")
-        for i, npc in enumerate(self.scene_coupler.get_adventures()):
+        for i, npc in enumerate(self.scene_coupler.get_npcs()):
             print(f"{i + 1}. {npc.name}")
+        print("0. Exit")
         user_input = self.get_user_input()
 
         try:

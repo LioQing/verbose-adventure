@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from config.adventure import adventure_config
 from engine.convo import BaseConvoCoupler
@@ -16,11 +16,15 @@ class ConvoCoupler(BaseConvoCoupler):
 
     system_message: str
     start_message: str
+    summary_system_message: str
+    summary_system_message_no_prev: str
 
     def __init__(
         self,
         system_message: Optional[str] = None,
         start_message: Optional[str] = None,
+        summary_system_message: Optional[str] = None,
+        summary_system_message_no_prev: Optional[str] = None,
     ):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(adventure_config.log_level)
@@ -31,6 +35,13 @@ class ConvoCoupler(BaseConvoCoupler):
 
         self.system_message = system_message or adventure_config.system_message
         self.start_message = start_message or adventure_config.start_message
+        self.summary_system_message = (
+            summary_system_message or adventure_config.summary_system_message
+        )
+        self.summary_system_message_no_prev = (
+            summary_system_message_no_prev
+            or adventure_config.summary_system_message_no_prev
+        )
 
         self.logger.info("ConvoCoupler created")
 
@@ -112,9 +123,7 @@ class ConvoCoupler(BaseConvoCoupler):
 
         return messages
 
-    def get_summary_messages(
-        self, history_length: int
-    ) -> Tuple[List[Message], Optional[str]]:
+    def get_summary_messages(self, history_length: int) -> List[Message]:
         """
         Get the message history and previous summary for the summary
 
@@ -122,20 +131,47 @@ class ConvoCoupler(BaseConvoCoupler):
             n: The number of messages to build from history
 
         Returns:
-            The list of messages history
-            Optional previous summary
+            The list of messages (summary system message, summary message,
+            history in JSON format)
         """
-        self.logger.info(
-            "Getting message history and previous summary for summary"
+        self.logger.info("Getting messages for summary")
+
+        messages = []
+
+        if self.summary is not None:
+            messages.append(
+                Message(
+                    role=Role.SYSTEM,
+                    content=self.summary_system_message_no_prev,
+                )
+            )
+        else:
+            messages.append(
+                Message(
+                    role=Role.SYSTEM,
+                    content=self.summary_system_message,
+                )
+            )
+            messages.append(
+                Message(
+                    role=Role.ASSISTANT,
+                    content=f"The previous summary is: {self.summary}",
+                )
+            )
+
+        json_history_messages = [
+            m.model_dump() for m in self.message[-history_length:]
+        ]
+        messages.append(
+            Message(
+                role=Role.ASSISTANT,
+                content=(
+                    f"The conversation messages are: {json_history_messages}"
+                ),
+            )
         )
 
-        if self.summary is None:
-            return self.message[-history_length:], None
-
-        return (
-            self.message[-history_length:],
-            Message(role=Role.ASSISTANT, content=self.summary),
-        )
+        return messages
 
     def save_summary_response(self, chatcmpl: Chatcmpl) -> Message:
         """
