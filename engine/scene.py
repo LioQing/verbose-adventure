@@ -29,12 +29,13 @@ class BaseSceneCoupler(abc.ABC):
         pass
 
     @abc.abstractclassmethod
-    def create_npc(self, npc: SceneNpc):
+    def create_npc(self, scene: SceneData, npc: SceneNpc):
         """
         Adds an NPC to the Scene.
 
         Args:
-            adventure: The NPC to represent the Adventure
+            scene: The Scene to add the NPC to
+            npc: The NPC to represent the Adventure
         """
         pass
 
@@ -68,7 +69,7 @@ class Scene:
     def init_scene(self):
         """Initializes a scene with the specified number of NPCs."""
         for npc in self.data.npcs:
-            self.coupler.create_npc(npc)
+            self.coupler.create_npc(self.data, npc)
 
     def process_user_selection(self, index: int) -> bool:
         """

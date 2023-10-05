@@ -1,9 +1,19 @@
+import json
 import logging
 from typing import List, Optional
 
 from config.adventure import adventure_config
+from data.scene import SceneNpc
 from engine.convo import BaseConvoCoupler
-from engine.models import Chatcmpl, Message, Role
+from engine.models import (
+    Chatcmpl,
+    Function,
+    Message,
+    Parameter,
+    Parameters,
+    Role,
+)
+from engine.openai_api import call_api_function
 
 
 class ConvoCoupler(BaseConvoCoupler):
@@ -218,3 +228,121 @@ class ConvoCoupler(BaseConvoCoupler):
             True if the conversation should be summarized, False otherwise
         """
         return len(self.message) % summary_interval in [0, 1]
+
+
+class SceneNpcConvoCoupler(ConvoCoupler):
+    """
+    ConvoCoupler for Scene NPC
+
+    It manages the knowledge and adjust the system message accordingly.
+    """
+
+    logger: logging.Logger
+    system_message: str
+    npc: SceneNpc
+
+    def __init__(self, system_message: str, npc: SceneNpc):
+        super().__init__(
+            system_message=f"{system_message} {npc.character}",
+            start_message="",
+        )
+
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(adventure_config.log_level)
+
+        self.system_message = system_message
+        self.npc = npc
+
+        self.logger.info("SceneNpcConvoCoupler created")
+
+    def get_built_messages(self, history_length: int) -> List[Message]:
+        """
+        Build the message list for the OpenAI call
+
+        Args:
+            n: The number of messages to build from history
+
+        Returns:
+            The list of messages (system message, summary message, history)
+        """
+        messages = super().get_built_messages(history_length)
+
+        self.logger.info("Adjusting system message list for OpenAI call")
+
+        extra_knowledge = self.get_knowledge(messages)
+        messages[0].content += f" {extra_knowledge}"
+
+        return messages
+
+    def get_knowledge(self, convo_messages: List[Message]) -> str:
+        """
+        Get the knowledge to use for the NPC
+
+        Args:
+            messages: The messages
+
+        Returns:
+            The knowledge to use
+        """
+        self.logger.info("Getting knowledge to use")
+
+        # Prepare the function and messages
+        function = Function(
+            name="get_knowledge",
+            description=(
+                "Get the assistant's knowledge to use for responding the"
+                " user's message. The assistant and user refer to the"
+                " conversation messages in the JSON list."
+            ),
+            parameters=Parameters(
+                parameters={
+                    k.name: Parameter(
+                        type="boolean",
+                        description=k.description,
+                        required=True,
+                    )
+                    for k in self.npc.knowledges
+                }
+            ),
+        )
+
+        messages = []
+
+        messages.append(
+            Message(
+                role=Role.SYSTEM,
+                content=adventure_config.knowledge_system_message,
+            )
+        )
+
+        json_convo_messages = [m.model_dump() for m in convo_messages]
+
+        messages.append(
+            Message(
+                role=Role.USER,
+                content=(
+                    "The JSON list of conversation messages is:"
+                    f" {json_convo_messages}"
+                ),
+            )
+        )
+
+        response = call_api_function(messages, function)
+
+        # Parse the arguments
+        if (
+            response.choices[0].message.function_call is None
+            or response.choices[0].message.function_call.name != function.name
+        ):
+            self.logger.warning("Function is not called.")
+            return ""
+
+        arguments = response.choices[0].message.function_call.arguments
+        arguments = json.loads(arguments)
+
+        self.logger.info(f"Arguments parsed: {arguments}")
+
+        # Get the knowledge
+        return " ".join(
+            k.knowledge for k in self.npc.knowledges if arguments[k.name]
+        )

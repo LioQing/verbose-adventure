@@ -2,10 +2,11 @@ import logging
 from typing import Callable, List, Optional, Tuple
 
 from config.adventure import adventure_config
-from data.scene import SceneNpc
+from data.scene import Scene, SceneNpc
 from engine.scene import BaseSceneCoupler
 
 from ..adventure import Adventure
+from .convo import SceneNpcConvoCoupler
 
 
 class SceneCoupler(BaseSceneCoupler):
@@ -40,14 +41,15 @@ class SceneCoupler(BaseSceneCoupler):
         else:
             return self.npcs[index][0].user_flow
 
-    def create_npc(self, npc: SceneNpc):
+    def create_npc(self, scene: Scene, npc: SceneNpc):
         """
         Adds an NPC to the Scene.
 
         Args:
-            adventure: The NPC to represent the Adventure
+            scene: The Scene to add the NPC to
+            npc: The NPC to represent the Adventure
         """
-        adv = self.__parse_npc_to_adventure(npc)
+        adv = self.__parse_npc_to_adventure(scene, npc)
         self.npcs.append((adv, npc))
 
     def get_npcs(self) -> List[SceneNpc]:
@@ -59,10 +61,13 @@ class SceneCoupler(BaseSceneCoupler):
         """
         return [adv[1] for adv in self.npcs]
 
-    def __parse_npc_to_adventure(self, npc: SceneNpc) -> Adventure:
+    def __parse_npc_to_adventure(
+        self, scene: Scene, npc: SceneNpc
+    ) -> Adventure:
         """Parses an NPC to an Adventure"""
-        # TODO: Improve ths
         return Adventure(
-            system_message=npc.character,
-            start_message="",
+            convo_coupler=SceneNpcConvoCoupler(
+                scene.system_message,
+                npc,
+            )
         )

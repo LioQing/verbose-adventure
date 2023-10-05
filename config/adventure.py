@@ -24,11 +24,23 @@ class AdventureConfig(BaseSettings):
         " about 10 to 30 words. You should always refer to the assistant in"
         " second person perspective, as 'you'."
     )
-    prev_summary_system_message: str = (
+    prev_summary_system_message: str = Field(
         "Describe the previous summary using 1 sentence."
     )
-    env_summary_system_message: str = (
+    env_summary_system_message: str = Field(
         "Describe the conversation messages using 3 sentences."
+    )
+    knowledge_system_message: str = Field(
+        "You are an assistant to analyze a JSON list of conversation messages"
+        " between an assistant and a user. You should help the assistant in"
+        " the converstaion decide which of his/her own knowledge to use to"
+        " respond to the user's message. You must call the function"
+        " `get_knowledge` and provide the arguments to indicate the knowledge"
+        " to use, each argument is a boolean value and True indicates the"
+        " knowledge should be used, False otherwise. Depends on user's"
+        " message, you may need to use multiple knowledge, you may also use no"
+        " knowledge at all if you think none of the knowledge is related to"
+        " the user's message."
     )
     default_choice_index: int = Field(0)
 

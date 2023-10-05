@@ -1,6 +1,5 @@
 import logging
 import traceback
-from typing import Optional
 
 from config.adventure import adventure_config
 from engine.convo import Convo
@@ -16,15 +15,11 @@ class Adventure:
     convo_coupler: ConvoCoupler
     convo: Convo
 
-    def __init__(
-        self,
-        system_message: Optional[str] = None,
-        start_message: Optional[str] = None,
-    ):
+    def __init__(self, convo_coupler: ConvoCoupler):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(adventure_config.log_level)
 
-        self.convo_coupler = ConvoCoupler(system_message, start_message)
+        self.convo_coupler = convo_coupler
         self.convo = Convo(self.convo_coupler)
 
         self.logger.info("Adventure created")

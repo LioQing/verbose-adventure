@@ -19,7 +19,7 @@ VICTIM_SYSTEM_MESSAGE: str = (
 )
 
 POWER_PLANT_FLOOR_PLAN_KNOWLEDGE = Knowledge(
-    name="power plant floor plan",
+    name="power_plant_floor_plan",
     description=f"{POWER_PLANT_NAME} power plant floor plan and locations",
     knowledge=(
         "The power plant consists of a car park, which leads"
@@ -32,7 +32,7 @@ POWER_PLANT_FLOOR_PLAN_KNOWLEDGE = Knowledge(
 )
 
 REACTOR_CONTROL_ROOM_KNOWLEDGE = Knowledge(
-    name="power plant reactor control room floor plan",
+    name="power_plant_reactor_control_room_floor_plan",
     description=(
         f"{POWER_PLANT_NAME} power plant reactor control room floor plan"
     ),
@@ -51,7 +51,7 @@ REACTOR_CONTROL_ROOM_KNOWLEDGE = Knowledge(
 )
 
 SECURITY_KNOWLEDGE = Knowledge(
-    name="power plant security",
+    name="power_plant_security",
     description=f"{POWER_PLANT_NAME} power plant security",
     knowledge=(
         f"The security of {POWER_PLANT_NAME} is very high,"
@@ -94,7 +94,7 @@ scene = Scene(
             ),
             knowledges=[
                 Knowledge(
-                    name="power plant accident",
+                    name="power_plant_accident",
                     description=(
                         f"the {POWER_PLANT_NAME} power plant explosion"
                         " accident"
@@ -117,8 +117,11 @@ scene = Scene(
                     ),
                 ),
                 Knowledge(
-                    name="natinoal news",
-                    description="recent national news",
+                    name="natinoal_news",
+                    description=(
+                        "recent national news related to the accident,"
+                        " investigation, and the personnel involved"
+                    ),
                     knowledge=(
                         f"1. Government restarted the {POWER_PLANT_NAME} power"
                         " plant explosion investigation using our country's"
@@ -138,7 +141,7 @@ scene = Scene(
                 REACTOR_CONTROL_ROOM_KNOWLEDGE,
                 SECURITY_KNOWLEDGE,
                 Knowledge(
-                    name="power plant personnel",
+                    name="power_plant_personnel",
                     description=f"{POWER_PLANT_NAME} power plant personnel",
                     knowledge=(
                         "There are 5 personnel in total in"
@@ -163,9 +166,9 @@ scene = Scene(
                 POWER_PLANT_FLOOR_PLAN_KNOWLEDGE,
                 REACTOR_CONTROL_ROOM_KNOWLEDGE,
                 Knowledge(
-                    name="understanding of other characters",
+                    name="understanding_of_other_characters",
                     description=(
-                        "his knowledge and understanding of other characters"
+                        "his knowledge and understanding_of_other_characters"
                         " involved in the accident"
                     ),
                     knowledge=(
@@ -187,7 +190,7 @@ scene = Scene(
                     ),
                 ),
                 Knowledge(
-                    name="experience and observations",
+                    name="experience_and_observations",
                     description=(
                         "his own experience, observations, and actions on the"
                         " day of the accident"
@@ -234,9 +237,9 @@ scene = Scene(
                 POWER_PLANT_FLOOR_PLAN_KNOWLEDGE,
                 REACTOR_CONTROL_ROOM_KNOWLEDGE,
                 Knowledge(
-                    name="understanding of other characters",
+                    name="understanding_of_other_characters",
                     description=(
-                        "her knowledge and understanding of other characters"
+                        "her knowledge and understanding_of_other_characters"
                         " involved in the accident"
                     ),
                     knowledge=(
@@ -256,7 +259,7 @@ scene = Scene(
                     ),
                 ),
                 Knowledge(
-                    name="experience and observations",
+                    name="experience_and_observations",
                     description=(
                         "her own experience, observations, and actions on the"
                         " day of the accident"
@@ -303,9 +306,9 @@ scene = Scene(
                 POWER_PLANT_FLOOR_PLAN_KNOWLEDGE,
                 REACTOR_CONTROL_ROOM_KNOWLEDGE,
                 Knowledge(
-                    name="understanding of other characters",
+                    name="understanding_of_other_characters",
                     description=(
-                        "his knowledge and understanding of other characters"
+                        "his knowledge and understanding_of_other_characters"
                         " involved in the accident"
                     ),
                     knowledge=(
@@ -325,7 +328,7 @@ scene = Scene(
                     ),
                 ),
                 Knowledge(
-                    name="experience and observations",
+                    name="experience_and_observations",
                     description=(
                         "his own experience, observations, and actions on the"
                         " day of the accident"
@@ -370,9 +373,9 @@ scene = Scene(
                 POWER_PLANT_FLOOR_PLAN_KNOWLEDGE,
                 REACTOR_CONTROL_ROOM_KNOWLEDGE,
                 Knowledge(
-                    name="understanding of other characters",
+                    name="understanding_of_other_characters",
                     description=(
-                        "his knowledge and understanding of other characters"
+                        "his knowledge and understanding_of_other_characters"
                         " involved in the accident"
                     ),
                     knowledge=(
@@ -391,7 +394,7 @@ scene = Scene(
                     ),
                 ),
                 Knowledge(
-                    name="experience and observations",
+                    name="experience_and_observations",
                     description=(
                         "his own experience, observations, and actions on the"
                         " day of the accident"
@@ -427,9 +430,9 @@ scene = Scene(
             knowledges=[
                 POWER_PLANT_FLOOR_PLAN_KNOWLEDGE,
                 Knowledge(
-                    name="understanding of other characters",
+                    name="understanding_of_other_characters",
                     description=(
-                        "his knowledge and understanding of other characters"
+                        "his knowledge and understanding_of_other_characters"
                         " involved in the accident"
                     ),
                     knowledge=(
@@ -447,7 +450,7 @@ scene = Scene(
                     ),
                 ),
                 Knowledge(
-                    name="experience and observations",
+                    name="experience_and_observations",
                     description=(
                         "his own experience, observations, and actions on the"
                         " day of the accident"
@@ -490,9 +493,9 @@ scene = Scene(
                 REACTOR_CONTROL_ROOM_KNOWLEDGE,
                 SECURITY_KNOWLEDGE,
                 Knowledge(
-                    name="understanding of other characters",
+                    name="understanding_of_other_characters",
                     description=(
-                        "her knowledge and understanding of other characters"
+                        "her knowledge and understanding_of_other_characters"
                         " involved in the accident"
                     ),
                     knowledge=(
@@ -506,7 +509,7 @@ scene = Scene(
                     ),
                 ),
                 Knowledge(
-                    name="experience and observations",
+                    name="experience_and_observations",
                     description=(
                         "her own experience, observations, and actions on the"
                         " day of the accident"

@@ -1,7 +1,7 @@
 from enum import StrEnum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_serializer
 
 
 class Role(StrEnum):
@@ -23,15 +23,15 @@ class Parameter(BaseModel):
     type: str
     description: str
     enum: Optional[List[str]] = Field(None)
-    required: bool = Field(False)
+    required: bool = Field(False, exclude=True)
 
+    @model_serializer
     def model_dump(self) -> Dict[str, Any]:
         """Dump the model"""
-        dump = super().model_dump()
-        dump.pop("required")
+        dump = {"type": self.type, "description": self.description}
 
-        if self.enum is None:
-            dump.pop("enum")
+        if self.enum is not None:
+            dump["enum"] = self.enum
 
         return dump
 
@@ -41,6 +41,7 @@ class Parameters(BaseModel):
 
     parameters: Dict[str, Parameter]
 
+    @model_serializer
     def model_dump(self) -> Dict[str, Any]:
         """Dump the model"""
         dump = {
@@ -60,22 +61,25 @@ class Function(BaseModel):
     """Function"""
 
     name: str
-    parameters: Dict[str, Parameter]
+    parameters: Parameters
     description: str
 
 
-class CreateFunctionCall(BaseModel):
+class FunctionCallRequest(BaseModel):
     """Function call for ChatCompletion.create"""
 
-    auto: bool = Field(False)
-    name: str
+    auto: Optional[bool] = Field(False)
+    name: Optional[str] = Field(None)
 
+    @model_serializer
     def model_dump(self) -> Dict[str, Any] | str:
         """Dump the model"""
+        if self.name is not None:
+            return {"name": self.name}
         if self.auto:
             return "auto"
 
-        return {"name": self.name}
+        return "none"
 
 
 class FunctionCall(BaseModel):
@@ -89,17 +93,20 @@ class Message(BaseModel):
     """Message for conversation"""
 
     role: Role
-    content: str
+    content: Optional[str] = Field(None)
     name: Optional[str] = Field(None)
     function_call: Optional[FunctionCall] = Field(None)
 
+    @model_serializer
     def model_dump(self) -> Dict[str, Any]:
         """Dump the model"""
-        dump = super().model_dump()
-        if self.name is None:
-            dump.pop("name")
-        if self.function_call is None:
-            dump.pop("function_call")
+        dump = {"role": self.role, "content": self.content}
+
+        if self.name is not None:
+            dump["name"] = self.name
+
+        if self.function_call is not None:
+            dump["function_call"] = self.function_call
 
         return dump
 
@@ -137,3 +144,21 @@ class ChatcmplRequest(BaseModel):
     deployment_id: str
     model: str
     messages: List[Dict[str, Any]]
+    functions: Optional[List[Function]] = Field(None)
+    function_call: FunctionCallRequest = Field(
+        default_factory=FunctionCallRequest
+    )
+    temperature: float = Field(1.0)
+    top_p: float = Field(1.0)
+    n: int = Field(1)
+    max_tokens: int = Field(2000)
+
+    def model_dump(self) -> Dict[str, Any]:
+        """Dump the model"""
+        dump = super().model_dump()
+
+        if self.functions is None:
+            dump.pop("functions")
+            dump.pop("function_call")
+
+        return dump

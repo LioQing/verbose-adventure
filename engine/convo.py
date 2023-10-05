@@ -2,17 +2,10 @@ import abc
 import logging
 from typing import List, Optional
 
-import openai
-
 from config.convo import convo_config
-from config.openai import open_ai_config
 
-from .models import Chatcmpl, ChatcmplRequest, Message
-
-openai.api_key = open_ai_config.key
-openai.api_base = open_ai_config.url
-openai.api_type = open_ai_config.api_type
-openai.api_version = open_ai_config.version
+from .models import Chatcmpl, Message
+from .openai_api import call_api
 
 
 class BaseConvoCoupler(abc.ABC):
@@ -181,7 +174,7 @@ class Convo:
 
         messages = self.coupler.get_built_messages(convo_config.history_length)
 
-        chatcmpl = self._call_api(messages)
+        chatcmpl = call_api(messages)
         chosen = self.coupler.save_api_response(chatcmpl)
 
         self.logger.info("API response done")
@@ -209,24 +202,8 @@ class Convo:
         )
 
         # Call API
-        chatcmpl = self._call_api(messages)
+        chatcmpl = call_api(messages)
         summary_message = self.coupler.save_summary_response(chatcmpl)
 
         self.logger.info("Conversation summarized")
         return summary_message
-
-    def _call_api(self, messages: List[Message]) -> Chatcmpl:
-        """Call the OpenAI API with the given messages"""
-        request = ChatcmplRequest(
-            deployment_id=convo_config.deployment,
-            model=convo_config.model,
-            messages=[m.model_dump() for m in messages],
-        )
-
-        self.logger.debug(f"Calling API with request: {request}")
-
-        response = openai.ChatCompletion.create(**request.model_dump())
-        response = Chatcmpl(**response)
-
-        self.logger.debug(f"API response: {response}")
-        return response

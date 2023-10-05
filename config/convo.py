@@ -10,8 +10,6 @@ class ConvoConfig(BaseSettings):
     log_level: str = Field(logger_config.level)
     summary_interval: int = Field(5)
     history_length: int = Field(5)
-    model: str
-    deployment: str
 
     class Config:
         env_prefix = "CONVO_"
