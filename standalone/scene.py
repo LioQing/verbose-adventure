@@ -50,7 +50,7 @@ class SceneRunner:
         """
         print("Type the index of the NPC you want to talk to, or 0 to exit.")
         for i, npc in enumerate(self.scene_coupler.get_npcs()):
-            print(f"{i + 1}. {npc.name}")
+            print(f"{i + 1}. {npc.name:<10} - {npc.title}")
         print("0. Exit")
         user_input = self.get_user_input()
 

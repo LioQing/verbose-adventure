@@ -85,6 +85,7 @@ scene = Scene(
     npcs=[
         SceneNpc(
             name=ASSISTANT_NAME,
+            title="Detective Assistant",
             character=(
                 "You are an assistant to answer questions about the power"
                 " plant with the given information, do not make up any"
@@ -160,6 +161,7 @@ scene = Scene(
         ),
         SceneNpc(
             name=OPERATOR_1_NAME,
+            title="Victim 1 Lead Operator",
             character=(
                 "You are the lead operator of the reactor. You are one of the"
                 f" first to work here since 2003. {VICTIM_SYSTEM_MESSAGE} Your"
@@ -232,6 +234,7 @@ scene = Scene(
         ),
         SceneNpc(
             name=OPERATOR_2_NAME,
+            title="Victim 2 Operator",
             character=(
                 "You are an operator of the reactor."
                 f" {VICTIM_SYSTEM_MESSAGE} Your name is {OPERATOR_2_NAME}."
@@ -301,6 +304,7 @@ scene = Scene(
         ),
         SceneNpc(
             name=OPERATOR_3_NAME,
+            title="Victim 3 Operator",
             character=(
                 "You are an operator of the reactor."
                 f" {VICTIM_SYSTEM_MESSAGE} Your name is {OPERATOR_3_NAME}."
@@ -368,6 +372,7 @@ scene = Scene(
         ),
         SceneNpc(
             name=OPERATOR_4_NAME,
+            title="Victim 4 Operator",
             character=(
                 "You are an operator of the reactor."
                 f" {VICTIM_SYSTEM_MESSAGE} Your name is {OPERATOR_4_NAME}."
@@ -426,6 +431,7 @@ scene = Scene(
         ),
         SceneNpc(
             name=JANITOR_NAME,
+            title="Victim 5 Janitor",
             character=(
                 f"You are the janitor of the {POWER_PLANT_NAME} power plant."
                 f" {VICTIM_SYSTEM_MESSAGE} Your name is {JANITOR_NAME}."
@@ -487,6 +493,7 @@ scene = Scene(
         ),
         SceneNpc(
             name=SECURITY_NAME,
+            title="Victim 6 Security",
             character=(
                 f"You the security of the {POWER_PLANT_NAME} power plant."
                 f" {VICTIM_SYSTEM_MESSAGE} Your name is {SECURITY_NAME}."

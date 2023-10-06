@@ -15,6 +15,7 @@ class SceneNpc(BaseModel):
     """Class for scene NPC."""
 
     name: str
+    title: str
     character: str
     knowledges: List[Knowledge]
 
