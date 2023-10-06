@@ -2,7 +2,7 @@ import logging
 
 from utils import formatter
 
-from .scene import SceneRunner
+from .scene_runner import SceneRunner
 
 logging.basicConfig()
 logger = logging.getLogger()

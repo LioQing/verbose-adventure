@@ -64,7 +64,7 @@ class Scene:
         self.coupler = coupler
         self.data = data
 
-        self.logger.info("Scene created.")
+        self.logger.info(f"Scene {self.data.id} created.")
 
     def init_scene(self):
         """Initializes a scene with the specified number of NPCs."""

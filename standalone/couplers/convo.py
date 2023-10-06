@@ -255,7 +255,7 @@ class SceneNpcConvoCoupler(ConvoCoupler):
         self.npc = npc
         self.knowledge_selection_token_used = 0
 
-        self.logger.info(f"SceneNpcConvoCoupler for {npc.name} created")
+        self.logger.info(f"SceneNpcConvoCoupler for {npc.id} created")
 
     @property
     def token_used(self) -> int:

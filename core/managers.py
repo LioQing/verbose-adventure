@@ -3,12 +3,50 @@ from typing import TYPE_CHECKING, List, Optional
 
 from django.db.models import Manager
 
+from data.scene import Scene as SceneData
 from engine import models as engine_models
 
 from .enums import ChatcmplKind
 
 if TYPE_CHECKING:
-    from .models import Adventure, Chatcmpl, Choice, Message, Summary
+    from .models import Adventure, Chatcmpl, Choice, Message, Scene, Summary
+
+
+class SceneManager(Manager):
+    """Manager for Scene"""
+
+    def initialize_scene(self, data: SceneData) -> "Scene":
+        """
+        Initialize a scene from scene data
+
+        Args:
+            data: The scene data
+
+        Returns:
+            The initialized scene
+        """
+        from .models import Knowledge, Scene, SceneNpc
+
+        # Create scene
+        scene = Scene.from_scene_data(data)
+        scene.save()
+
+        # Create knowledges
+        knowledges = dict()
+        for npc_data in data.npcs:
+            for knowledge_data in npc_data.knowledges:
+                knowledge = Knowledge.from_scene_data_knowledge(knowledge_data)
+                knowledge.save()
+                knowledges[knowledge.id] = knowledge
+
+        # Create npcs
+        for npc_data in data.npcs:
+            npc = SceneNpc.from_scene_data_npc(npc_data, scene)
+            npc.save()
+            npc_knowledges = [knowledges[k.id] for k in npc_data.knowledges]
+            npc.knowledges.set(npc_knowledges)
+
+        return scene
 
 
 class MessageManager(Manager):

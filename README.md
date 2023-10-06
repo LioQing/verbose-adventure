@@ -112,14 +112,42 @@ erDiagram
         Text summary
     }
 
-    Scene {
+    SceneRunner {
         ManyToOne(User) user FK
+        OneToOne(Scene) scene FK
+    }
+
+    Scene {
+        Text id PK
+        Text name
+        Text system_message
+    }
+
+    SceneNpcAdventurePair {
+        ManyToOne(SceneRunner) runner FK
+        OneToOne(SceneNpc) npc FK
+        OneToOne(Adventure) adventure FK
+    }
+
+    SceneNpc {
+        Text id PK
+        Text name
+        Text title
+        Text character
+        ManyToOne(Scene) scene FK
+        ManyToMany(SceneNpc) knowledges FK
+    }
+
+    Knowledge {
+        Text id PK
+        Text name
+        Text description
+        Text knowledge
     }
 
     Adventure {
         ManyToOne(User) user FK
-        ManyToOne(Scene) scene FK "Nullable"
-        OneToOne(Summary) summary FK
+        OneToOne(Summary) summary FK "Nullable"
         OneToOne(Message) latest_message FK "Nullable"
         Text system_message
         Text start_message
@@ -156,15 +184,25 @@ erDiagram
         Text finish_reason
     }
 
+    User ||--o{ SceneRunner : runs
+
     User ||--o{ Adventure : plays
 
-    User ||--o{ Scene : plays
+    SceneRunner ||--|| Scene : runs
 
-    Scene ||--o{ Adventure : has
+    SceneRunner ||--|{ SceneNpcAdventurePair : has
+
+    Scene ||--|{ SceneNpc : npcs
+
+    SceneNpcAdventurePair ||--|| SceneNpc : npc
+
+    SceneNpcAdventurePair ||--|| Adventure : adventure
+
+    SceneNpc }|--|{ Knowledge : knows
 
     Message }o--o{ Message : prev
 
-    Adventure ||--o{ Message : has
+    Adventure ||--o| Message : has
 
     Adventure ||--o{ Chatcmpl : calls
 

@@ -5,6 +5,7 @@ from typing import Optional
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+import data.scene
 from config.adventure import adventure_config
 from engine import models as engine_models
 
@@ -84,6 +85,108 @@ class Adventure(models.Model):
             ).aggregate(models.Sum("token"))["token__sum"]
             or 0
         )
+
+
+class Scene(models.Model):
+    """Scene model"""
+
+    id = models.TextField(primary_key=True, unique=True)
+    name = models.TextField()
+    system_message = models.TextField()
+
+    objects = managers.SceneManager()
+
+    def from_scene_data(scene_data: data.scene.Scene) -> Scene:
+        """
+        Create a Scene from an engine Scene
+
+        Args:
+            scene_data: The engine Scene
+
+        Returns:
+            The created Scene
+        """
+        return Scene(
+            id=scene_data.id,
+            name=scene_data.name,
+            system_message=scene_data.system_message,
+        )
+
+
+class Knowledge(models.Model):
+    """Knowledge model"""
+
+    id = models.TextField(primary_key=True, unique=True)
+    name = models.TextField()
+    description = models.TextField()
+    knowledge = models.TextField()
+
+    def from_scene_data_knowledge(
+        knowledge: data.scene.Knowledge,
+    ) -> Knowledge:
+        """
+        Create a Knowledge from an engine Knowledge
+
+        Args:
+            knowledge: The engine Knowledge
+
+        Returns:
+            The created Knowledge
+        """
+        return Knowledge(
+            id=knowledge.id,
+            name=knowledge.name,
+            description=knowledge.description,
+            knowledge=knowledge.knowledge,
+        )
+
+
+class SceneNpc(models.Model):
+    """Scene NPC model"""
+
+    id = models.TextField(primary_key=True, unique=True)
+    name = models.TextField()
+    title = models.TextField()
+    character = models.TextField()
+    knowledges = models.ManyToManyField(Knowledge)
+    scene = models.ForeignKey(Scene, on_delete=models.CASCADE)
+
+    def from_scene_data_npc(
+        npc: data.scene.SceneNpc, scene: Scene
+    ) -> SceneNpc:
+        """
+        Create a SceneNpc from an engine SceneNpc with empty knowledge
+
+        Args:
+            npc: The engine SceneNpc
+            scene: The engine Scene
+
+        Returns:
+            The created SceneNpc
+        """
+        npc = SceneNpc(
+            id=npc.id,
+            name=npc.name,
+            title=npc.title,
+            character=npc.character,
+            scene=scene,
+        )
+        return npc
+
+
+class SceneRunner(models.Model):
+    """Scene runner model"""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    scene = models.OneToOneField(Scene, on_delete=models.CASCADE)
+
+
+class SceneNpcAdventurePair(models.Model):
+    """Scene NPC adventure pair model"""
+
+    runner = models.ForeignKey(SceneRunner, on_delete=models.CASCADE)
+    npc = models.ForeignKey(SceneNpc, on_delete=models.CASCADE)
+    adventure = models.ForeignKey(Adventure, on_delete=models.CASCADE)
 
 
 class Message(models.Model):
