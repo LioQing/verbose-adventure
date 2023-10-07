@@ -1,14 +1,17 @@
 import logging
 
+from rest_framework import exceptions as rest_exceptions
 from rest_framework import generics, permissions, response, views, viewsets
 
 from config.convo import convo_config
 from engine import models as engine_models
 from engine.convo import Convo
+from engine.scene import Scene
 from rest_auth.permissions import IsWhitelisted
 
 from . import exceptions, models, serializers
 from .couplers.convo import ConvoCoupler
+from .couplers.scene import SceneCoupler
 
 
 class UserView(
@@ -384,6 +387,133 @@ class ConvoTotalTokenCountView(views.APIView):
             token_count = sum(a.token_count for a in adventure)
 
             serializer = self.serializer_class({"token_count": token_count})
+            logger.debug("serializer: %s", serializer)
+            return response.Response(serializer.data)
+        except Exception as e:
+            import traceback
+
+            traceback.print_exc()
+            logger.error(e)
+            raise e
+
+
+class SceneView(
+    generics.RetrieveAPIView,
+    generics.ListAPIView,
+    viewsets.GenericViewSet,
+):
+    """View for the Scene model"""
+
+    queryset = models.Scene.objects.all()
+    serializer_class = serializers.SceneSerializer
+    permission_classes = [IsWhitelisted]
+
+
+class SceneRunnerCreateView(generics.CreateAPIView, views.APIView):
+    """View for creating the scene runner"""
+
+    serializer_class = serializers.SceneRunnerCreateSerializer
+    permission_classes = [IsWhitelisted]
+
+    def create(self, request, scene_id: str, *args, **kwargs):
+        """Return the scene runner"""
+        logger = logging.getLogger(__name__)
+        logger.setLevel(convo_config.log_level)
+
+        try:
+            try:
+                scene = models.Scene.objects.get(id=scene_id)
+            except models.Scene.DoesNotExist:
+                raise rest_exceptions.NotFound(f"Scene {scene_id} not found")
+
+            scene_runner = models.SceneRunner.objects.create(
+                user=request.user, scene=scene
+            )
+
+            scene_coupler = SceneCoupler(scene_runner)
+            scene_data = scene.to_scene_data()
+            engine_scene = Scene(
+                scene_coupler,
+                scene_data,
+            )
+
+            engine_scene.init_scene()
+
+            serializer = self.serializer_class({"id": scene_runner.id})
+            logger.debug("serializer: %s", serializer)
+            return response.Response(serializer.data)
+        except Exception as e:
+            import traceback
+
+            traceback.print_exc()
+            logger.error(e)
+            raise e
+
+
+class SceneRunnerRespondView(generics.CreateAPIView, views.APIView):
+    """View for user responding to the scene"""
+
+    serializer_class = serializers.ConvoRespondSerializer
+    permission_classes = [IsWhitelisted]
+
+    def create(self, request, runner_id: int, npc_id: str, *args, **kwargs):
+        """Return API response of the scene"""
+        logger = logging.getLogger(__name__)
+        logger.setLevel(convo_config.log_level)
+
+        try:
+            try:
+                runner = models.SceneRunner.objects.get(id=runner_id)
+            except models.SceneRunner.DoesNotExist:
+                raise rest_exceptions.NotFound(
+                    f"SceneRunner {runner_id} not found"
+                )
+
+            if runner.user != request.user:
+                raise exceptions.SceneRunnerNotOwnedByUserException()
+
+            try:
+                npc = models.SceneNpc.objects.get(id=npc_id)
+            except models.SceneNpc.DoesNotExist:
+                raise rest_exceptions.NotFound(f"SceneNpc {npc_id} not found")
+
+            scene_coupler = SceneCoupler(runner)
+            scene = Scene(scene_coupler, runner.scene.to_scene_data())
+
+            convo_coupler = scene.process_user_selection(npc.index)
+            if convo_coupler is None:
+                logger.error("Unreachable reached, convo coupler is None")
+                raise rest_exceptions.APIException(
+                    "Unreachable reached, convo coupler is None"
+                )
+
+            convo = Convo(convo_coupler)
+
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user_response = serializer.validated_data["user_response"]
+            user_message = engine_models.Message(
+                role=engine_models.Role.USER,
+                content=user_response,
+            )
+            user_message = convo.process_user_response(user_message)
+            logger.debug("user_message: %s", user_message)
+
+            api_response = convo.process_api_response()
+            logger.debug("api_response: %s", api_response)
+
+            summary_message = convo.summarize()
+            logger.debug("summary_message: %s", summary_message)
+
+            serializer = self.serializer_class(
+                {
+                    "user_response": user_message.content,
+                    "api_response": api_response.content,
+                    "summary": summary_message.content
+                    if summary_message
+                    else None,
+                }
+            )
             logger.debug("serializer: %s", serializer)
             return response.Response(serializer.data)
         except Exception as e:

@@ -1,8 +1,9 @@
 import logging
-from typing import Callable, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from config.adventure import adventure_config
 from data.scene import Scene, SceneNpc
+from engine.convo import BaseConvoCoupler
 from engine.scene import BaseSceneCoupler
 
 from ..adventure import Adventure
@@ -25,21 +26,20 @@ class SceneCoupler(BaseSceneCoupler):
         self.logger.setLevel(adventure_config.log_level)
         self.npcs = []
 
-    def get_npc_user_flow(self, index: int) -> Optional[Callable]:
+    def get_npc_user_flow(self, index: int) -> Optional[BaseConvoCoupler]:
         """
-        Gets the function of the NPC to run the user flow at this index.
+        Gets the function to run the user flow at this index if it exists.
 
         Args:
             index: The index to get the NPC at
 
         Returns:
-            The function to run the user flow for this NPC,
-            or None otherwise.
+            The convo coupler of the NPC at this index,
         """
         if index >= len(self.npcs):
             return None
         else:
-            return self.npcs[index][0].user_flow
+            return self.npcs[index][0].convo_coupler
 
     def create_npc(self, scene: Scene, npc: SceneNpc):
         """

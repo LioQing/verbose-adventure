@@ -4,6 +4,7 @@ import traceback
 from config.adventure import adventure_config
 from data.scene import Scene as SceneData
 from engine.scene import Scene
+from standalone.adventure import Adventure
 
 from .couplers.scene import SceneCoupler
 
@@ -56,7 +57,12 @@ class SceneRunner:
 
         try:
             index = int(user_input) - 1
-            return self.scene.process_user_selection(index)
+            convo_coupler = self.scene.process_user_selection(index)
+            if convo_coupler is None:
+                return False
+
+            adventure = Adventure(convo_coupler)
+            return adventure.user_flow()
         except Exception as e:
             print(traceback.format_exc())
             print(f"Error: {e}")

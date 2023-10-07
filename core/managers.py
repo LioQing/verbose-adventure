@@ -40,8 +40,8 @@ class SceneManager(Manager):
                 knowledges[knowledge.id] = knowledge
 
         # Create npcs
-        for npc_data in data.npcs:
-            npc = SceneNpc.from_scene_data_npc(npc_data, scene)
+        for i, npc_data in enumerate(data.npcs):
+            npc = SceneNpc.from_scene_data_npc(npc_data, scene, i)
             npc.save()
             npc_knowledges = [knowledges[k.id] for k in npc_data.knowledges]
             npc.knowledges.set(npc_knowledges)

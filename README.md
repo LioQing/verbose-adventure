@@ -114,7 +114,7 @@ erDiagram
 
     SceneRunner {
         ManyToOne(User) user FK
-        OneToOne(Scene) scene FK
+        ManyToOne(Scene) scene FK
     }
 
     Scene {
@@ -125,8 +125,9 @@ erDiagram
 
     SceneNpcAdventurePair {
         ManyToOne(SceneRunner) runner FK
-        OneToOne(SceneNpc) npc FK
+        ManyToOne(SceneNpc) npc FK
         OneToOne(Adventure) adventure FK
+        PositiveInteger knowledge_selection_token_count
     }
 
     SceneNpc {
@@ -188,13 +189,13 @@ erDiagram
 
     User ||--o{ Adventure : plays
 
-    SceneRunner ||--|| Scene : runs
+    SceneRunner }|--|| Scene : runs
 
     SceneRunner ||--|{ SceneNpcAdventurePair : has
 
     Scene ||--|{ SceneNpc : npcs
 
-    SceneNpcAdventurePair ||--|| SceneNpc : npc
+    SceneNpcAdventurePair }|--|| SceneNpc : npc
 
     SceneNpcAdventurePair ||--|| Adventure : adventure
 
@@ -292,9 +293,34 @@ cp .env.example .env
 
 Fill in the environment variables in the `.env` file.
 
+## Running the Project
+
+There are 3 ways to run the project, using Docker, using the database + Django locally, or using the standalone program.
+
+The production environment is deployed using Docker. However, you can also use the database + Django locally for development because it is the same build as the production environment.
+
+The standalone program is used for quickly testing the engine without the database and Django during development.
+
+### Standalone Program
+
+Simply run the `standalone/main.py` file as a Python module.
+```bash
+python -m standalone.main
+```
+
 ### Docker
 
 You can skip the database and Django setup if you use [Docker](https://www.docker.com).
+
+You have to make sure the environment variables in the `.env` file are set correctly, the port is set to 5433 in `docker-compose.yml` file to avoid conflict with the local database.
+```bash
+# Windows
+DB_HOST = host.docker.internal
+DB_PORT = 5433
+# Linux, Mac OS X
+DB_HOST = 127.17.0.1    # or any IP address you set explicitly
+DB_PORT = 5433
+```
 
 Make sure you have Docker installed.
 ```bash
@@ -318,15 +344,17 @@ When you want to stop the containers.
 docker-compose down
 ```
 
-### Database
+### Database + Django
 
 Use [PostgreSQL](https://www.postgresql.org) as the database.
 
-Change the settings according to the `.env` file.
+You have to make sure the environment variables in the `.env` file are set correctly.
+```bash
+DB_HOST = localhost
+DB_PORT = 5432          # default postgresql port
+```
 
-### Django
-
-Run the migrations.
+Run the Django migrations.
 ```bash
 python manage.py makemigrations
 python manage.py migrate

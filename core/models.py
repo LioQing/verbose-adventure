@@ -94,6 +94,9 @@ class Scene(models.Model):
     name = models.TextField()
     system_message = models.TextField()
 
+    # Backward typehint
+    npcs: models.QuerySet[SceneNpc]
+
     objects = managers.SceneManager()
 
     def from_scene_data(scene_data: data.scene.Scene) -> Scene:
@@ -112,6 +115,23 @@ class Scene(models.Model):
             system_message=scene_data.system_message,
         )
 
+    def to_scene_data(self) -> data.scene.Scene:
+        """
+        Create an engine Scene from a Scene
+
+        Args:
+            scene: The Scene
+
+        Returns:
+            The created engine Scene
+        """
+        return data.scene.Scene(
+            id=self.id,
+            name=self.name,
+            system_message=self.system_message,
+            npcs=[npc.to_scene_data_npc() for npc in self.npcs.all()],
+        )
+
 
 class Knowledge(models.Model):
     """Knowledge model"""
@@ -120,6 +140,9 @@ class Knowledge(models.Model):
     name = models.TextField()
     description = models.TextField()
     knowledge = models.TextField()
+
+    # Backward typehint
+    npcs: models.QuerySet[SceneNpc]
 
     def from_scene_data_knowledge(
         knowledge: data.scene.Knowledge,
@@ -140,6 +163,23 @@ class Knowledge(models.Model):
             knowledge=knowledge.knowledge,
         )
 
+    def to_scene_data_knowledge(self) -> data.scene.Knowledge:
+        """
+        Create an engine Knowledge from a Knowledge
+
+        Args:
+            knowledge: The Knowledge
+
+        Returns:
+            The created engine Knowledge
+        """
+        return data.scene.Knowledge(
+            id=self.id,
+            name=self.name,
+            description=self.description,
+            knowledge=self.knowledge,
+        )
+
 
 class SceneNpc(models.Model):
     """Scene NPC model"""
@@ -148,11 +188,14 @@ class SceneNpc(models.Model):
     name = models.TextField()
     title = models.TextField()
     character = models.TextField()
-    knowledges = models.ManyToManyField(Knowledge)
-    scene = models.ForeignKey(Scene, on_delete=models.CASCADE)
+    knowledges = models.ManyToManyField(Knowledge, related_name="npcs")
+    scene = models.ForeignKey(
+        Scene, related_name="npcs", on_delete=models.CASCADE
+    )
+    index = models.PositiveIntegerField()
 
     def from_scene_data_npc(
-        npc: data.scene.SceneNpc, scene: Scene
+        npc: data.scene.SceneNpc, scene: Scene, index: int
     ) -> SceneNpc:
         """
         Create a SceneNpc from an engine SceneNpc with empty knowledge
@@ -160,6 +203,7 @@ class SceneNpc(models.Model):
         Args:
             npc: The engine SceneNpc
             scene: The engine Scene
+            index: The index of the NPC
 
         Returns:
             The created SceneNpc
@@ -170,15 +214,40 @@ class SceneNpc(models.Model):
             title=npc.title,
             character=npc.character,
             scene=scene,
+            index=index,
         )
         return npc
+
+    def to_scene_data_npc(self) -> data.scene.SceneNpc:
+        """
+        Create an engine SceneNpc from a SceneNpc
+
+        Args:
+            npc: The SceneNpc
+
+        Returns:
+            The created engine SceneNpc
+        """
+        return data.scene.SceneNpc(
+            id=self.id,
+            name=self.name,
+            title=self.title,
+            character=self.character,
+            knowledges=[
+                knowledge.to_scene_data_knowledge()
+                for knowledge in self.knowledges.all()
+            ],
+        )
 
 
 class SceneRunner(models.Model):
     """Scene runner model"""
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    scene = models.OneToOneField(Scene, on_delete=models.CASCADE)
+    scene = models.ForeignKey(Scene, on_delete=models.CASCADE)
+
+    # Backward typehint
+    scenenpcadventurepair_set: models.QuerySet[SceneNpcAdventurePair]
 
 
 class SceneNpcAdventurePair(models.Model):
@@ -186,7 +255,8 @@ class SceneNpcAdventurePair(models.Model):
 
     runner = models.ForeignKey(SceneRunner, on_delete=models.CASCADE)
     npc = models.ForeignKey(SceneNpc, on_delete=models.CASCADE)
-    adventure = models.ForeignKey(Adventure, on_delete=models.CASCADE)
+    adventure = models.OneToOneField(Adventure, on_delete=models.CASCADE)
+    knowledge_selection_token_count = models.PositiveIntegerField(default=0)
 
 
 class Message(models.Model):

@@ -7,7 +7,7 @@ from data.scene.power_plant import scene as power_plant_scene
 class Command(BaseCommand):
     """Command class for load_data."""
 
-    help = "Closes the specified poll for voting"
+    help = "Load scene data into the database."
 
     def handle(self, *args, **options):
         """Handle command."""

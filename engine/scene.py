@@ -1,10 +1,11 @@
 import abc
 import logging
-from typing import Callable, List, Optional
+from typing import List, Optional
 
 from config.adventure import adventure_config
 from data.scene import Scene as SceneData
 from data.scene import SceneNpc
+from engine.convo import BaseConvoCoupler
 
 
 class BaseSceneCoupler(abc.ABC):
@@ -15,16 +16,15 @@ class BaseSceneCoupler(abc.ABC):
     """
 
     @abc.abstractclassmethod
-    def get_npc_user_flow(self, index: int) -> Optional[Callable]:
+    def get_npc_user_flow(self, index: int) -> BaseConvoCoupler:
         """
-        Gets the function to run the user flow at this index if it exists.
+        Gets the function to run the user flow at this index.
 
         Args:
             index: The index to get the NPC at
 
         Returns:
-            The function to run the user flow at this index,
-            or None otherwise.
+            The convo coupler of the NPC at this index,
         """
         pass
 
@@ -71,7 +71,7 @@ class Scene:
         for npc in self.data.npcs:
             self.coupler.create_npc(self.data, npc)
 
-    def process_user_selection(self, index: int) -> bool:
+    def process_user_selection(self, index: int) -> Optional[BaseConvoCoupler]:
         """
         Processes the user selection.
 
@@ -79,15 +79,11 @@ class Scene:
             index: The index of the NPC to talk to
 
         Returns:
-            True if the user requests exiting, False otherwise.
+            None if the user wants to exit, otherwise the NPC's convo coupler
         """
         if index == -1:
             print("Exiting per user request.")
-            return False
+            return None
 
-        if user_flow := self.coupler.get_npc_user_flow(index):
-            user_flow()
-        else:
-            print("Invalid index.")
-
-        return True
+        npc_coupler = self.coupler.get_npc_user_flow(index)
+        return npc_coupler

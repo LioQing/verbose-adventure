@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import List
 
@@ -5,6 +6,7 @@ from config.adventure import adventure_config
 from config.convo import convo_config
 from engine import models as engine_models
 from engine.convo import BaseConvoCoupler
+from engine.openai_api import call_api_function
 
 from .. import models
 
@@ -12,6 +14,7 @@ from .. import models
 class ConvoCoupler(BaseConvoCoupler):
     """Abstract class for Convo to communicate with its data state"""
 
+    logger: logging.Logger
     adventure: models.Adventure
 
     def __init__(self, adventure: models.Adventure):
@@ -258,3 +261,130 @@ class ConvoCoupler(BaseConvoCoupler):
             True if the conversation should be summarized, False otherwise
         """
         return self.adventure.iteration % summary_interval in [0, 1]
+
+
+class SceneNpcConvoCoupler(ConvoCoupler):
+    """ConvoCoupler for Scene NPC"""
+
+    logger: logging.Logger
+    scene_system_message: str
+    npc_adv_pair: models.SceneNpcAdventurePair
+
+    def __init__(
+        self, system_message: str, npc_adv_pair: models.SceneNpcAdventurePair
+    ):
+        adv = npc_adv_pair.adventure
+        adv.system_message = f"{system_message} {npc_adv_pair.npc.character}"
+        adv.start_message = ""
+        adv.save()
+
+        super().__init__(adv)
+
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(adventure_config.log_level)
+
+        self.scene_system_message = system_message
+        self.npc_adv_pair = npc_adv_pair
+
+        self.logger.info(
+            f"SceneNpcConvoCoupler for {npc_adv_pair.npc.id} created"
+        )
+
+    def get_built_messages(
+        self, history_length: int
+    ) -> List[engine_models.Message]:
+        """
+        Build the message list for the OpenAI call
+
+        Args:
+            n: The number of messages to build from history
+
+        Returns:
+            The list of messages (system message, summary message, history)
+        """
+        messages = super().get_built_messages(history_length)
+
+        self.logger.info("Adjusting system message list for OpenAI call")
+
+        extra_knowledge = self.get_knowledge(messages)
+        messages[0].content += f" {extra_knowledge}"
+
+        return messages
+
+    def get_knowledge(
+        self, convo_messages: List[engine_models.Message]
+    ) -> str:
+        """
+        Get the knowledge to use for the NPC
+
+        Args:
+            messages: The messages
+
+        Returns:
+            The knowledge to use
+        """
+        self.logger.info("Getting knowledge to use")
+
+        # Prepare the function and messages
+        function = engine_models.Function(
+            name="get_knowledge",
+            description=(
+                "Get the assistant's knowledge to use for responding the"
+                " user's message. The assistant and user refer to the"
+                " conversation messages in the JSON list."
+            ),
+            parameters=engine_models.Parameters(
+                parameters={
+                    k.name: engine_models.Parameter(
+                        type="boolean",
+                        description=k.description,
+                        required=True,
+                    )
+                    for k in self.npc_adv_pair.npc.knowledges.all()
+                }
+            ),
+        )
+
+        messages = []
+
+        messages.append(
+            engine_models.Message(
+                role=engine_models.Role.SYSTEM,
+                content=adventure_config.knowledge_system_message,
+            )
+        )
+
+        json_convo_messages = [m.model_dump() for m in convo_messages]
+
+        messages.append(
+            engine_models.Message(
+                role=engine_models.Role.USER,
+                content=(
+                    "The JSON list of conversation messages is:"
+                    f" {json_convo_messages}"
+                ),
+            )
+        )
+
+        response = call_api_function(messages, function)
+
+        self.npc_adv_pair.knowledge_selection_token_count += (
+            response.usage.total_tokens
+        )
+
+        # Parse the arguments
+        if response.choices[0].message.function_call.name != function.name:
+            self.logger.warning("Function is not called.")
+            return ""
+
+        arguments = response.choices[0].message.function_call.arguments
+        arguments = json.loads(arguments)
+
+        self.logger.info(f"Arguments parsed: {arguments}")
+
+        # Get the knowledge
+        return " ".join(
+            k.knowledge
+            for k in self.npc_adv_pair.npc.knowledges.all()
+            if arguments[k.name]
+        )
