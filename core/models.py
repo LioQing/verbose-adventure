@@ -258,6 +258,18 @@ class SceneNpcAdventurePair(models.Model):
     adventure = models.OneToOneField(Adventure, on_delete=models.CASCADE)
     knowledge_selection_token_count = models.PositiveIntegerField(default=0)
 
+    @property
+    def token_count(self) -> int:
+        """
+        Return the total token count of the NPC
+
+        Returns:
+            The total token count of the NPC
+        """
+        return (
+            self.adventure.token_count + self.knowledge_selection_token_count
+        )
+
 
 class Message(models.Model):
     """Message model"""

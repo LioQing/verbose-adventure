@@ -26,12 +26,31 @@ class AdventureStatsSerializer(serializers.Serializer):
     token_count = serializers.IntegerField()
 
 
+class SceneNpcStatsSerializer(serializers.Serializer):
+    """Serializer for the UserDetailsSerializer"""
+
+    index = serializers.IntegerField()
+    name = serializers.CharField()
+    title = serializers.CharField()
+    token_count = serializers.IntegerField()
+
+
+class SceneRunnerStatsSerializer(serializers.Serializer):
+    """Serializer for the UserDetailsSerializer"""
+
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    npcs = serializers.ListField(child=SceneNpcStatsSerializer())
+    token_count = serializers.IntegerField()
+
+
 class UserDetailsSerializer(serializers.Serializer):
     """Serializer for the UserDetailsView"""
 
     num_adventures = serializers.IntegerField()
     token_count = serializers.IntegerField()
     adventures = serializers.ListField(child=AdventureStatsSerializer())
+    scenes = serializers.ListField(child=SceneRunnerStatsSerializer())
 
 
 class WhitelistSerializer(serializers.Serializer):

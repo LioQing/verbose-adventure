@@ -68,7 +68,13 @@ class UserDetailsView(views.APIView):
 
         try:
             user = models.User.objects.get(id=id)
-            adventures = models.Adventure.objects.filter(user=user)
+            adventures = models.Adventure.objects.filter(
+                user=user, scenenpcadventurepair=None
+            )
+            scene_runners = models.SceneRunner.objects.filter(user=user)
+            scene_npcs = models.SceneNpcAdventurePair.objects.filter(
+                runner__in=scene_runners
+            )
             serializer = self.serializer_class(
                 {
                     "num_adventures": len(adventures),
@@ -76,6 +82,28 @@ class UserDetailsView(views.APIView):
                     "adventures": [
                         {"id": a.id, "token_count": a.token_count}
                         for a in adventures
+                    ],
+                    "scenes": [
+                        {
+                            "id": s.id,
+                            "name": s.scene.name,
+                            "npcs": [
+                                {
+                                    "index": n.npc.index,
+                                    "name": n.npc.name,
+                                    "title": n.npc.title,
+                                    "token_count": n.token_count,
+                                }
+                                for n in scene_npcs
+                                if n.runner == s
+                            ],
+                            "token_count": sum(
+                                n.token_count
+                                for n in scene_npcs
+                                if n.runner == s
+                            ),
+                        }
+                        for s in scene_runners
                     ],
                 }
             )
