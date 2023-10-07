@@ -78,7 +78,8 @@ class UserDetailsView(views.APIView):
             serializer = self.serializer_class(
                 {
                     "num_adventures": len(adventures),
-                    "token_count": sum(a.token_count for a in adventures),
+                    "token_count": sum(a.token_count for a in adventures)
+                    + sum(n.token_count for n in scene_npcs),
                     "adventures": [
                         {"id": a.id, "token_count": a.token_count}
                         for a in adventures
@@ -542,6 +543,37 @@ class SceneRunnerRespondView(generics.CreateAPIView, views.APIView):
                     else None,
                 }
             )
+            logger.debug("serializer: %s", serializer)
+            return response.Response(serializer.data)
+        except Exception as e:
+            import traceback
+
+            traceback.print_exc()
+            logger.error(e)
+            raise e
+
+
+class SceneRunnerSceneView(views.APIView):
+    """View for getting the scene runner scene"""
+
+    serializer_class = serializers.SceneSerializer
+    permission_classes = [IsWhitelisted]
+
+    def get(self, request, id: str, *args, **kwargs):
+        """Return the scene runner scene"""
+        logger = logging.getLogger(__name__)
+        logger.setLevel(convo_config.log_level)
+
+        try:
+            try:
+                runner = models.SceneRunner.objects.get(id=id)
+            except models.SceneRunner.DoesNotExist:
+                raise rest_exceptions.NotFound(f"SceneRunner {id} not found")
+
+            if runner.user != request.user:
+                raise exceptions.SceneRunnerNotOwnedByUserException()
+
+            serializer = self.serializer_class(runner.scene)
             logger.debug("serializer: %s", serializer)
             return response.Response(serializer.data)
         except Exception as e:

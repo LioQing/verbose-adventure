@@ -140,7 +140,7 @@ class Convo:
         init_message = self.coupler.get_init_message()
         self.logger.info(f"Init message: {init_message}")
 
-        chatcmpl = self._call_api([init_message])
+        chatcmpl = call_api([init_message])
         chosen = self.coupler.save_api_response(chatcmpl)
 
         self.logger.info("Story initialized")

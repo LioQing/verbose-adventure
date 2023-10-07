@@ -66,6 +66,11 @@ convo_urlpatterns = [
 
 scene_runner_urlpatterns = [
     path(
+        "scene-runner/scene/<str:id>/",
+        views.SceneRunnerSceneView.as_view(),
+        name="scene-runner-scene",
+    ),
+    path(
         "scene-runner/create/<str:scene_id>/",
         views.SceneRunnerCreateView.as_view(),
         name="scene-runner-create",
