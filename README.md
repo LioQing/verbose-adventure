@@ -20,24 +20,26 @@ flowchart LR
     end
 
     subgraph "Initialize Scene (init_scene)"
-        subgraph "Adventure"
-            userflow[User flow]
-            construct[Constructor]
-        end
-    adventuresDB[(NPCs)]
-    adventureDB[(NPC)]
+        construct[Constructor]
+        adventuresDB[(NPCs)]
     end
 
-    start ==> construct
-    construct -.add_npc.-> adventuresDB
-    adventuresDB1 -.get_npcs.-> selection
-    construct --> selection
-    selection --> exitQ
+    subgraph "Convo Coupler User Flow (ConvoCoupler.user_flow)"
+        userflow[User flow]
+        adventureDB[(ConvoCoupler)]
+    end
 
-    exitQ -- Yes --> stop
-    adventureDB -.get_npc.-> userflow
-    exitQ -- No --> userflow
+    start --> construct
+    construct -.create_npc.-> adventuresDB
+
     userflow --> selection
+    adventureDB -.get_npc_user_flow.-> userflow
+
+    construct --> selection
+    adventuresDB1 -.get_npcs.-> selection
+    selection --> exitQ
+    exitQ -- Yes --> stop
+    exitQ -- No --> userflow
 ```
 
 ### Adventure
