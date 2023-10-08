@@ -6,9 +6,11 @@ class OpenAIConfig(BaseSettings):
     """Configurations for OpenAI API"""
 
     api_type: str = Field("azure")
-    version: str = Field("2023-05-15")
+    version: str = Field("2023-08-01-preview")
     key: str
     url: str
+    model: str
+    deployment: str
 
     class Config:
         env_prefix = "OPENAI_"

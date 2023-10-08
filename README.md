@@ -4,6 +4,46 @@ This is demo project for GPT interactive story generation.
 
 ## System Flow Diagram
 
+### Scene
+
+In Scene, NPC is an equivalent name for Adventure.
+
+```mermaid
+flowchart LR
+    start((Start))
+    stop((Stop))
+
+    subgraph "Process User Selection (process_user_selection)"
+        adventuresDB1[(NPCs)]
+        selection[/Adventure selection/]
+        exitQ{Exit?}
+    end
+
+    subgraph "Initialize Scene (init_scene)"
+        construct[Constructor]
+        adventuresDB[(NPCs)]
+    end
+
+    subgraph "Convo Coupler User Flow (ConvoCoupler.user_flow)"
+        userflow[User flow]
+        adventureDB[(ConvoCoupler)]
+    end
+
+    start --> construct
+    construct -.create_npc.-> adventuresDB
+
+    userflow --> selection
+    adventureDB -.get_npc_user_flow.-> userflow
+
+    construct --> selection
+    adventuresDB1 -.get_npcs.-> selection
+    selection --> exitQ
+    exitQ -- Yes --> stop
+    exitQ -- No --> userflow
+```
+
+### Adventure
+
 ```mermaid
 flowchart LR
     subgraph "Initialize story (init_story)"
@@ -12,13 +52,13 @@ flowchart LR
         saveMessage1[(Chatcmpl & Choice\nMessage)]
     end
 
-    subgraph "Do API response (do_api_response)"
+    subgraph "Process API response (process_api_response)"
         history[(Message history\nSummary message\nSystem message)]
         saveMessage3[(Chatcmpl & Choice\nMessage)]
         api2[Get response w/ API]
     end
 
-    subgraph "Do user response (do_user_response)"
+    subgraph "Process user response (process_user_response)"
         userInput[/User input/]
         saveMessage2[(Message)]
         stopQ{Stop?\nshould_stop}
@@ -65,15 +105,52 @@ flowchart LR
 ## Entity Relationship Diagram
 
 ```mermaid
-
 erDiagram
     User {
         Boolean is_whitelisted
     }
 
+    Summary {
+        Text summary
+    }
+
+    SceneRunner {
+        ManyToOne(User) user FK
+        ManyToOne(Scene) scene FK
+    }
+
+    Scene {
+        Text id PK
+        Text name
+        Text system_message
+    }
+
+    SceneNpcAdventurePair {
+        ManyToOne(SceneRunner) runner FK
+        ManyToOne(SceneNpc) npc FK
+        OneToOne(Adventure) adventure FK
+        PositiveInteger knowledge_selection_token_count
+    }
+
+    SceneNpc {
+        Text id PK
+        Text name
+        Text title
+        Text character
+        ManyToOne(Scene) scene FK
+        ManyToMany(SceneNpc) knowledges FK
+    }
+
+    Knowledge {
+        Text id PK
+        Text name
+        Text description
+        Text knowledge
+    }
+
     Adventure {
         ManyToOne(User) user FK
-        OneToOne(Summary) summary FK
+        OneToOne(Summary) summary FK "Nullable"
         OneToOne(Message) latest_message FK "Nullable"
         Text system_message
         Text start_message
@@ -93,10 +170,6 @@ erDiagram
         PositiveInteger prompt_tokens
     }
 
-    Summary {
-        Text summary
-    }
-
     Message {
         Datetime timestamp PK "Partial PK"
         ManyToOne(Adventure) adventure FK,PK "Partial PK"
@@ -114,11 +187,25 @@ erDiagram
         Text finish_reason
     }
 
+    User ||--o{ SceneRunner : runs
+
     User ||--o{ Adventure : plays
+
+    SceneRunner }|--|| Scene : runs
+
+    SceneRunner ||--|{ SceneNpcAdventurePair : has
+
+    Scene ||--|{ SceneNpc : npcs
+
+    SceneNpcAdventurePair }|--|| SceneNpc : npc
+
+    SceneNpcAdventurePair ||--|| Adventure : adventure
+
+    SceneNpc }|--|{ Knowledge : knows
 
     Message }o--o{ Message : prev
 
-    Adventure ||--o{ Message : has
+    Adventure ||--o| Message : has
 
     Adventure ||--o{ Chatcmpl : calls
 
@@ -208,9 +295,34 @@ cp .env.example .env
 
 Fill in the environment variables in the `.env` file.
 
+## Running the Project
+
+There are 3 ways to run the project, using Docker, using the database + Django locally, or using the standalone program.
+
+The production environment is deployed using Docker. However, you can also use the database + Django locally for development because it is the same build as the production environment.
+
+The standalone program is used for quickly testing the engine without the database and Django during development.
+
+### Standalone Program
+
+Simply run the `standalone/main.py` file as a Python module.
+```bash
+python -m standalone.main
+```
+
 ### Docker
 
 You can skip the database and Django setup if you use [Docker](https://www.docker.com).
+
+You have to make sure the environment variables in the `.env` file are set correctly, the port is set to 5433 in `docker-compose.yml` file to avoid conflict with the local database.
+```bash
+# Windows
+DB_HOST = host.docker.internal
+DB_PORT = 5433
+# Linux, Mac OS X
+DB_HOST = 127.17.0.1    # or any IP address you set explicitly
+DB_PORT = 5433
+```
 
 Make sure you have Docker installed.
 ```bash
@@ -234,15 +346,17 @@ When you want to stop the containers.
 docker-compose down
 ```
 
-### Database
+### Database + Django
 
 Use [PostgreSQL](https://www.postgresql.org) as the database.
 
-Change the settings according to the `.env` file.
+You have to make sure the environment variables in the `.env` file are set correctly.
+```bash
+DB_HOST = localhost
+DB_PORT = 5432          # default postgresql port
+```
 
-### Django
-
-Run the migrations.
+Run the Django migrations.
 ```bash
 python manage.py makemigrations
 python manage.py migrate

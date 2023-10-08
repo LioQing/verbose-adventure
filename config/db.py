@@ -13,7 +13,11 @@ class DBConfig(BaseSettings):
     name: str
     user: str
     password: str
-    options: Dict[str, Any] = Field(default_factory=dict)
+    options: Dict[str, Any] = Field(
+        {
+            "connect_timeout": 5,
+        }
+    )
 
     def to_settings(self) -> Dict[str, Any]:
         """Convert to Django settings format"""

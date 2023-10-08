@@ -6,6 +6,7 @@ from . import views
 router = routers.SimpleRouter()
 router.register(r"user", views.UserView)
 router.register(r"adventure", views.AdventureView)
+router.register(r"scene", views.SceneView)
 
 user_urlpatterns = [
     path(
@@ -63,9 +64,28 @@ convo_urlpatterns = [
     ),
 ]
 
+scene_runner_urlpatterns = [
+    path(
+        "scene-runner/scene/<str:id>/",
+        views.SceneRunnerSceneView.as_view(),
+        name="scene-runner-scene",
+    ),
+    path(
+        "scene-runner/create/<str:scene_id>/",
+        views.SceneRunnerCreateView.as_view(),
+        name="scene-runner-create",
+    ),
+    path(
+        "scene-runner/respond/<int:runner_id>/<str:npc_id>/",
+        views.SceneRunnerRespondView.as_view(),
+        name="scene-runner-respond",
+    ),
+]
+
 urlpatterns = [
     *router.urls,
     *user_urlpatterns,
     *convo_urlpatterns,
+    *scene_runner_urlpatterns,
     path("ping", views.PingPongView.as_view(), name="ping"),
 ]

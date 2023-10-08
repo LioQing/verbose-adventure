@@ -23,3 +23,11 @@ class AdventureSummaryNotFoundException(exceptions.NotFound):
     status_code = 404
     default_detail = "Adventure summary not found."
     default_code = "adventure_summary_not_found"
+
+
+class SceneRunnerNotOwnedByUserException(exceptions.APIException):
+    """Exception for when the scene runner is not owned by the user."""
+
+    status_code = 400
+    default_detail = "Scene runner is not owned by the user."
+    default_code = "scene_runner_not_owned_by_user"
