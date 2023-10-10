@@ -13,27 +13,46 @@ flowchart LR
     start((Start))
     stop((Stop))
 
+    subgraph "Initialize Scene (init_scene)"
+        construct[Constructor]
+        adventuresDB[(NPCs)]
+    end
+
     subgraph "Process User Selection (process_user_selection)"
         adventuresDB1[(NPCs)]
         selection[/Adventure selection/]
         exitQ{Exit?}
     end
 
-    subgraph "Initialize Scene (init_scene)"
-        construct[Constructor]
-        adventuresDB[(NPCs)]
+    subgraph "Process NPC Discovery (process_npc_discovery)"
+        npcDiscoveryReq[(NPCs)]
+        discoveredQ{NPC Discovered?}
+        discoverd[NPC Discovered]
+        npcDiscovered[(NPCs)]
     end
 
     subgraph "Convo Coupler User Flow (ConvoCoupler.user_flow)"
         userflow[User flow]
-        adventureDB[(ConvoCoupler)]
+        subgraph convoCoupler["Scene Convo Coupler Class (SceneConvoCoupler)"]
+            direction TB
+            adventureDB[(ConvoCoupler)]
+            get_built_messages[get_build_messages\noverriden with knowledge selection\nand NPC discovery]
+
+            adventureDB ~~~ get_built_messages
+        end
     end
 
     start --> construct
     construct -.create_npc.-> adventuresDB
 
-    userflow --> selection
-    adventureDB -.get_npc_user_flow.-> userflow
+    npcDiscoveryReq -.get_npc_req.-> discoveredQ
+    discoveredQ -- No --> selection
+    discoveredQ -- Yes --> discoverd
+    discoverd -.discover_npc.-> npcDiscovered
+    discoverd --> selection
+
+    userflow --> discoveredQ
+    convoCoupler -.get_npc_user_flow.-> userflow
 
     construct --> selection
     adventuresDB1 -.get_npcs.-> selection
