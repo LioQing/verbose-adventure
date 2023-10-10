@@ -31,6 +31,7 @@ class SceneNpc(BaseModel):
     name: str
     title: str
     character: str
+    # TODO: Add discover_requirement
     knowledges: List[Knowledge]
     id: str = Field(
         default_factory=lambda: inspect.getmodule(

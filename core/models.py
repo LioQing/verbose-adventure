@@ -188,6 +188,7 @@ class SceneNpc(models.Model):
     name = models.TextField()
     title = models.TextField()
     character = models.TextField()
+    # TODO: Add discover_requirement
     knowledges = models.ManyToManyField(Knowledge, related_name="npcs")
     scene = models.ForeignKey(
         Scene, related_name="npcs", on_delete=models.CASCADE
@@ -256,6 +257,7 @@ class SceneNpcAdventurePair(models.Model):
     runner = models.ForeignKey(SceneRunner, on_delete=models.CASCADE)
     npc = models.ForeignKey(SceneNpc, on_delete=models.CASCADE)
     adventure = models.OneToOneField(Adventure, on_delete=models.CASCADE)
+    # TODO: Add discovered
     knowledge_selection_token_count = models.PositiveIntegerField(default=0)
 
     @property

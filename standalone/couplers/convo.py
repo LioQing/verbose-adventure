@@ -240,6 +240,7 @@ class SceneNpcConvoCoupler(ConvoCoupler):
     logger: logging.Logger
     scene_system_message: str
     npc: SceneNpc
+    # TODO: Add discovered
     knowledge_selection_token_used: int
 
     def __init__(self, system_message: str, npc: SceneNpc):
@@ -283,6 +284,8 @@ class SceneNpcConvoCoupler(ConvoCoupler):
 
         extra_knowledge = self.get_knowledge(messages)
         messages[0].content += f" {extra_knowledge}"
+
+        # TODO: Check if discovered using OpenAI API
 
         return messages
 

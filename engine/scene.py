@@ -49,6 +49,10 @@ class BaseSceneCoupler(abc.ABC):
         """
         pass
 
+    # TODO: Add get_npc_req
+
+    # TODO: ADd discover_npc
+
 
 class Scene:
     """The Scene class for holding NPCs"""
@@ -87,3 +91,5 @@ class Scene:
 
         npc_coupler = self.coupler.get_npc_user_flow(index)
         return npc_coupler
+
+    # TODO: Add process_npc_discovery

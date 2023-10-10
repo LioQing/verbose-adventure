@@ -12,6 +12,7 @@ In Scene, NPC is an equivalent name for Adventure.
 flowchart LR
     start((Start))
     stop((Stop))
+    outputDiscoveredMessage[/Output discovered NPC/]
 
     subgraph "Initialize Scene (init_scene)"
         construct[Constructor]
@@ -26,14 +27,14 @@ flowchart LR
 
     subgraph "Process NPC Discovery (process_npc_discovery)"
         npcDiscoveryReq[(NPCs)]
-        discoveredQ{NPC Discovered?}
-        discoverd[NPC Discovered]
+        discoveredQ{NPC discovered?\nw/ API}
+        discoverd[NPC discovered]
         npcDiscovered[(NPCs)]
     end
 
     subgraph "Convo Coupler User Flow (ConvoCoupler.user_flow)"
         userflow[User flow]
-        subgraph convoCoupler["Scene Convo Coupler Class (SceneConvoCoupler)"]
+        subgraph convoCoupler["Scene NPC Convo Coupler Class (SceneNpcConvoCoupler)"]
             direction TB
             adventureDB[(ConvoCoupler)]
             get_built_messages[get_build_messages\noverriden with knowledge selection\nand NPC discovery]
@@ -49,7 +50,8 @@ flowchart LR
     discoveredQ -- No --> selection
     discoveredQ -- Yes --> discoverd
     discoverd -.discover_npc.-> npcDiscovered
-    discoverd --> selection
+    discoverd --> outputDiscoveredMessage
+    outputDiscoveredMessage --> selection
 
     userflow --> discoveredQ
     convoCoupler -.get_npc_user_flow.-> userflow
@@ -148,6 +150,7 @@ erDiagram
         ManyToOne(SceneRunner) runner FK
         ManyToOne(SceneNpc) npc FK
         OneToOne(Adventure) adventure FK
+        Boolean discovered
         PositiveInteger knowledge_selection_token_count
     }
 
@@ -156,6 +159,7 @@ erDiagram
         Text name
         Text title
         Text character
+        Text discover_requirement
         ManyToOne(Scene) scene FK
         ManyToMany(SceneNpc) knowledges FK
     }
