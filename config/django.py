@@ -1,10 +1,11 @@
 from typing import List
 
 from pydantic import Field
-from pydantic_settings import BaseSettings
+
+from . import BaseConfig
 
 
-class DjangoConfig(BaseSettings):
+class DjangoConfig(BaseConfig):
     """Django config"""
 
     secret_key: str = Field()

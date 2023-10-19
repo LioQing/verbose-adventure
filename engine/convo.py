@@ -3,6 +3,7 @@ import logging
 from typing import List, Optional
 
 from config.convo import convo_config
+from config.logger import logger_config
 
 from .models import Chatcmpl, Message
 from .openai_api import call_api
@@ -122,7 +123,7 @@ class Convo:
 
     def __init__(self, coupler: BaseConvoCoupler):
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(convo_config.log_level)
+        self.logger.setLevel(logger_config.level)
 
         self.coupler = coupler
 

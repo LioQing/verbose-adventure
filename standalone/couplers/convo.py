@@ -3,6 +3,7 @@ import logging
 from typing import List, Optional
 
 from config.adventure import adventure_config
+from config.logger import logger_config
 from data.scene import SceneNpc
 from engine.convo import BaseConvoCoupler
 from engine.models import (
@@ -37,7 +38,7 @@ class ConvoCoupler(BaseConvoCoupler):
         summary_system_message_no_prev: Optional[str] = None,
     ):
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(adventure_config.log_level)
+        self.logger.setLevel(logger_config.level)
 
         self.message = []
         self.chatcmpl = []
@@ -250,7 +251,7 @@ class SceneNpcConvoCoupler(ConvoCoupler):
         )
 
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(adventure_config.log_level)
+        self.logger.setLevel(logger_config.level)
 
         self.scene_system_message = system_message
         self.npc = npc
@@ -299,7 +300,7 @@ class SceneNpcConvoCoupler(ConvoCoupler):
         Returns:
             True if the conversation should stop, False otherwise
         """
-        return message.content == "\\back"
+        return message.content == "back"
 
     def get_knowledge(self, convo_messages: List[Message]) -> str:
         """

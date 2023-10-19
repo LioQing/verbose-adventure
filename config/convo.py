@@ -1,13 +1,11 @@
 from pydantic import Field
-from pydantic_settings import BaseSettings
 
-from .logger import logger_config
+from . import BaseConfig
 
 
-class ConvoConfig(BaseSettings):
+class ConvoConfig(BaseConfig):
     """Configurations for Convo"""
 
-    log_level: str = Field(logger_config.level)
     summary_interval: int = Field(5)
     history_length: int = Field(5)
 

@@ -1,7 +1,7 @@
 import logging
 import traceback
 
-from config.adventure import adventure_config
+from config.logger import logger_config
 from engine.convo import Convo
 from engine.models import Message, Role
 
@@ -17,7 +17,7 @@ class Adventure:
 
     def __init__(self, convo_coupler: ConvoCoupler):
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(adventure_config.log_level)
+        self.logger.setLevel(logger_config.level)
 
         self.convo_coupler = convo_coupler
         self.convo = Convo(self.convo_coupler)
@@ -58,7 +58,7 @@ class Adventure:
             user_response = self.convo.process_user_response(user_message)
 
             if user_response is None:
-                print("Session ended")
+                self.logger.info("Session ended")
                 return False
 
             api_response = self.convo.process_api_response()
@@ -76,6 +76,7 @@ class Adventure:
 
     def get_user_input(self) -> str:
         """Get user input"""
+        print("Enter your message ('back' to go back):")
         return input("> ")
 
     def print_assistant_response(self, message: Message):

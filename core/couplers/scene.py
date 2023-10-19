@@ -2,7 +2,7 @@ import logging
 from typing import List, Optional
 
 import data.scene
-from config.adventure import adventure_config
+from config.logger import logger_config
 from core import models
 from core.couplers.convo import SceneNpcConvoCoupler
 from engine.scene import BaseConvoCoupler, BaseSceneCoupler
@@ -16,7 +16,7 @@ class SceneCoupler(BaseSceneCoupler):
 
     def __init__(self, scene_runner: models.SceneRunner):
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(adventure_config.log_level)
+        self.logger.setLevel(logger_config.level)
 
         self.scene_runner = scene_runner
 

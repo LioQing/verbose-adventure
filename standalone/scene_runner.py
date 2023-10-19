@@ -1,7 +1,7 @@
 import logging
 import traceback
 
-from config.adventure import adventure_config
+from config.logger import logger_config
 from data.scene import Scene as SceneData
 from engine.scene import Scene
 from standalone.adventure import Adventure
@@ -18,7 +18,7 @@ class SceneRunner:
 
     def __init__(self, scene_data: SceneData):
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(adventure_config.log_level)
+        self.logger.setLevel(logger_config.level)
 
         self.scene_coupler = SceneCoupler()
         self.scene = Scene(self.scene_coupler, scene_data)
@@ -62,7 +62,7 @@ class SceneRunner:
                 return False
 
             adventure = Adventure(convo_coupler)
-            return adventure.user_flow()
+            adventure.user_flow()
         except Exception as e:
             print(traceback.format_exc())
             print(f"Error: {e}")

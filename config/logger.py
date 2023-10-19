@@ -1,8 +1,9 @@
 from pydantic import Field
-from pydantic_settings import BaseSettings
+
+from . import BaseConfig
 
 
-class LoggerConfig(BaseSettings):
+class LoggerConfig(BaseConfig):
     """Logger config"""
 
     level: str = Field("INFO")

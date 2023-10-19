@@ -1,7 +1,7 @@
 import logging
 from typing import List, Optional, Tuple
 
-from config.adventure import adventure_config
+from config.logger import logger_config
 from data.scene import Scene, SceneNpc
 from engine.convo import BaseConvoCoupler
 from engine.scene import BaseSceneCoupler
@@ -23,7 +23,7 @@ class SceneCoupler(BaseSceneCoupler):
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(adventure_config.log_level)
+        self.logger.setLevel(logger_config.level)
         self.npcs = []
 
     def get_npc_user_flow(self, index: int) -> Optional[BaseConvoCoupler]:

@@ -1,10 +1,11 @@
 import logging
 
+from config.logger import logger_config
 from utils import formatter
 
 from .scene_runner import SceneRunner
 
-logging.basicConfig()
+logging.basicConfig(level=logger_config.level)
 logger = logging.getLogger()
 handler = logging.StreamHandler()
 handler.setFormatter(formatter.ColoredFormatter())

@@ -1,8 +1,9 @@
 from pydantic import Field
-from pydantic_settings import BaseSettings
+
+from . import BaseConfig
 
 
-class OpenAIConfig(BaseSettings):
+class OpenAIConfig(BaseConfig):
     """Configurations for OpenAI API"""
 
     api_type: str = Field("azure")

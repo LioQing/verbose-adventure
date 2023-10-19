@@ -4,6 +4,7 @@ from rest_framework import exceptions as rest_exceptions
 from rest_framework import generics, permissions, response, views, viewsets
 
 from config.convo import convo_config
+from config.logger import logger_config
 from engine import models as engine_models
 from engine.convo import Convo
 from engine.scene import Scene
@@ -64,7 +65,7 @@ class UserDetailsView(views.APIView):
     def get(self, request, id, *args, **kwargs):
         """Return the user details"""
         logger = logging.getLogger(__name__)
-        logger.setLevel(convo_config.log_level)
+        logger.setLevel(logger_config.level)
 
         try:
             user = models.User.objects.get(id=id)
@@ -223,7 +224,7 @@ class ConvoHistoryView(views.APIView):
     def get(self, request, id, *args, **kwargs):
         """Return the convo history"""
         logger = logging.getLogger(__name__)
-        logger.setLevel(convo_config.log_level)
+        logger.setLevel(logger_config.level)
 
         try:
             adventure = models.Adventure.objects.get(id=id)
@@ -259,7 +260,7 @@ class ConvoStartView(generics.CreateAPIView, views.APIView):
     def create(self, request, id, *args, **kwargs):
         """Return first API response of the adventure"""
         logger = logging.getLogger(__name__)
-        logger.setLevel(convo_config.log_level)
+        logger.setLevel(logger_config.level)
 
         try:
             adventure = models.Adventure.objects.get(id=id)
@@ -298,7 +299,7 @@ class ConvoRespondView(generics.CreateAPIView, views.APIView):
     def create(self, request, id, *args, **kwargs):
         """Return API response of the adventure"""
         logger = logging.getLogger(__name__)
-        logger.setLevel(convo_config.log_level)
+        logger.setLevel(logger_config.level)
 
         try:
             adventure = models.Adventure.objects.get(id=id)
@@ -353,7 +354,7 @@ class ConvoSummaryView(views.APIView):
     def get(self, request, id, *args, **kwargs):
         """Return summary of the adventure convo"""
         logger = logging.getLogger(__name__)
-        logger.setLevel(convo_config.log_level)
+        logger.setLevel(logger_config.level)
 
         try:
             adventure = models.Adventure.objects.get(id=id)
@@ -383,7 +384,7 @@ class ConvoTokenCountView(views.APIView):
     def get(self, request, id, *args, **kwargs):
         """Return token count of the adventure convo"""
         logger = logging.getLogger(__name__)
-        logger.setLevel(convo_config.log_level)
+        logger.setLevel(logger_config.level)
 
         try:
             adventure = models.Adventure.objects.get(id=id)
@@ -409,7 +410,7 @@ class ConvoTotalTokenCountView(views.APIView):
     def get(self, request, *args, **kwargs):
         """Return token count of the adventure convo"""
         logger = logging.getLogger(__name__)
-        logger.setLevel(convo_config.log_level)
+        logger.setLevel(logger_config.level)
 
         try:
             adventure = models.Adventure.objects.all()
@@ -447,7 +448,7 @@ class SceneRunnerCreateView(generics.CreateAPIView, views.APIView):
     def create(self, request, scene_id: str, *args, **kwargs):
         """Return the scene runner"""
         logger = logging.getLogger(__name__)
-        logger.setLevel(convo_config.log_level)
+        logger.setLevel(logger_config.level)
 
         try:
             try:
@@ -488,7 +489,7 @@ class SceneRunnerRespondView(generics.CreateAPIView, views.APIView):
     def create(self, request, runner_id: int, npc_id: str, *args, **kwargs):
         """Return API response of the scene"""
         logger = logging.getLogger(__name__)
-        logger.setLevel(convo_config.log_level)
+        logger.setLevel(logger_config.level)
 
         try:
             try:
@@ -562,7 +563,7 @@ class SceneRunnerSceneView(views.APIView):
     def get(self, request, id: str, *args, **kwargs):
         """Return the scene runner scene"""
         logger = logging.getLogger(__name__)
-        logger.setLevel(convo_config.log_level)
+        logger.setLevel(logger_config.level)
 
         try:
             try:

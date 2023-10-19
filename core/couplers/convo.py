@@ -4,6 +4,7 @@ from typing import List
 
 from config.adventure import adventure_config
 from config.convo import convo_config
+from config.logger import logger_config
 from engine import models as engine_models
 from engine.convo import BaseConvoCoupler
 from engine.openai_api import call_api_function
@@ -19,7 +20,7 @@ class ConvoCoupler(BaseConvoCoupler):
 
     def __init__(self, adventure: models.Adventure):
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(adventure_config.log_level)
+        self.logger.setLevel(logger_config.level)
 
         self.adventure = adventure
 
@@ -281,7 +282,7 @@ class SceneNpcConvoCoupler(ConvoCoupler):
         super().__init__(adv)
 
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(adventure_config.log_level)
+        self.logger.setLevel(logger_config.level)
 
         self.scene_system_message = system_message
         self.npc_adv_pair = npc_adv_pair

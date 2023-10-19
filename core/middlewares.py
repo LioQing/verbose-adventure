@@ -2,7 +2,7 @@ import logging
 
 from django.http import HttpRequest, HttpResponse
 
-from config.convo import convo_config
+from config.logger import logger_config
 
 
 class RequestLogMiddleware:
@@ -14,7 +14,7 @@ class RequestLogMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(convo_config.log_level)
+        self.logger.setLevel(logger_config.level)
 
     def __call__(self, request: HttpRequest):
         """Log the request and response"""
