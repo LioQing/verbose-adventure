@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, validator
 
@@ -31,8 +31,8 @@ class SceneNpc(BaseModel):
     name: str
     title: str
     character: str
-    # TODO: Add discover_requirement
     knowledges: List[Knowledge]
+    discover_requirement: Optional[str] = Field(None)
     id: str = Field(
         default_factory=lambda: inspect.getmodule(
             inspect.stack()[2][0]

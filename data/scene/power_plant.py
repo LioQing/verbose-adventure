@@ -190,18 +190,20 @@ scene = Scene(
                         f" {JANITOR_NAME} is the janitor, you know he likes to"
                         " play with coins, and that he is not allowed to be"
                         " inside the reactor control room. You know"
-                        f" {SECURITY_NAME} is the security, she has access to"
-                        " the security cameras. You know the powerplant has"
-                        " good security system but don't know any detail"
-                        " except that wireless signal is not allowed to go in"
-                        " or out of the powerplant."
+                        f" {SECURITY_NAME} is the security and works in the"
+                        " security room, she has access to the security"
+                        " cameras. You know the powerplant has good security"
+                        " system but don't know any detail except that"
+                        " wireless signal is not allowed to go in or out of"
+                        " the powerplant."
                     ),
                 ),
                 Knowledge(
                     name="v1_experience_and_observations",
                     description=(
-                        "his own experience, observations, and actions on the"
-                        " day of the accident"
+                        "any of his own experience, observations, and actions"
+                        " on the day of the accident, anything related to him"
+                        " on that day"
                     ),
                     knowledge=(
                         "You are the first to sign in to the powerplant among"
@@ -229,8 +231,9 @@ scene = Scene(
                         " announcement. You see the reading and know it is"
                         " too late now, you realized and want to escape. You"
                         f" turn around the saw the janitor {JANITOR_NAME} was"
-                        " inside the room, which is not allowed. But before"
-                        " you could react, the reactor exploded."
+                        " inside the room next to the door, which is not"
+                        " allowed. But before you could react, the reactor"
+                        " exploded."
                     ),
                 ),
             ],
@@ -261,17 +264,19 @@ scene = Scene(
                         f" together. You know {JANITOR_NAME} is the janitor,"
                         " he is not allowed to be inside the reactor control"
                         f" room without approval. You know {SECURITY_NAME} is"
-                        " the security. You know the powerplant has good"
-                        " security system but don't know any detail except"
-                        " except that wireless signal is not allowed to go in"
-                        " or out of the powerplant."
+                        " the security and she works in the security room."
+                        " You know the powerplant has good security system"
+                        " but don't know any detail except except that"
+                        " wireless signal is not allowed to go in or out of"
+                        " the powerplant."
                     ),
                 ),
                 Knowledge(
                     name="v2_experience_and_observations",
                     description=(
-                        "her own experience, observations, and actions on the"
-                        " day of the accident"
+                        "any of her own experience, observations, and actions"
+                        " on the day of the accident, anything related to her"
+                        " on that day"
                     ),
                     knowledge=(
                         f"You signed in with {OPERATOR_3_NAME} as normal."
@@ -331,17 +336,19 @@ scene = Scene(
                         f" together. You know {JANITOR_NAME} is the janitor,"
                         " he is not allowed to be inside the reactor control"
                         f" room without approval. You know {SECURITY_NAME} is"
-                        " the security. You know the powerplant has good"
-                        " security system but don't know any detail except"
-                        " except that wireless signal is not allowed to go in"
-                        " or out of the powerplant."
+                        " the security and she works in the security room."
+                        " You know the powerplant has good security system"
+                        " but don't know any detail except except that"
+                        " wireless signal is not allowed to go in or out of"
+                        " the powerplant."
                     ),
                 ),
                 Knowledge(
                     name="v3_experience_and_observations",
                     description=(
-                        "his own experience, observations, and actions on the"
-                        " day of the accident"
+                        "any of his own experience, observations, and actions"
+                        " on the day of the accident, anything related to him"
+                        " on that day"
                     ),
                     knowledge=(
                         "Today waking up you found yourself having a"
@@ -363,12 +370,12 @@ scene = Scene(
                         f" {OPERATOR_4_NAME} didn't follow you but you"
                         " continued to walk back to the room. As you reach"
                         " the door of the room, you noticed"
-                        f" {JANITOR_NAME} walking out of the room, he is not"
-                        " permitted to enter the room at all. He was holding"
-                        " a USB and a coin, which seemed to have some sort of"
-                        " icon on it. Before you could ask him what is he"
-                        " doing, you heard an overloading warning"
-                        " announcement and then the reactor exploded."
+                        f" {JANITOR_NAME} walking out of the room next to the"
+                        " door, he is not permitted to enter the room at all."
+                        " He was holding a USB and a coin, which seemed to"
+                        " have some sort of icon on it. Before you could ask"
+                        " him what is he doing, you heard an overloading"
+                        " warning announcement and then the reactor exploded."
                     ),
                 ),
             ],
@@ -398,17 +405,19 @@ scene = Scene(
                         f" together. You know {JANITOR_NAME} is the janitor,"
                         " he is not allowed to be inside the reactor control"
                         f" room without approval. You know {SECURITY_NAME} is"
-                        " the security. You know the powerplant has good"
-                        " security system but don't know any detail except"
-                        " that wireless signal is not allowed to go in or out"
-                        " of the powerplant."
+                        " the security and she works in the security room."
+                        " You know the powerplant has good security system"
+                        " but don't know any detail except that wireless"
+                        " signal is not allowed to go in or out of the"
+                        " powerplant."
                     ),
                 ),
                 Knowledge(
                     name="v4_experience_and_observations",
                     description=(
-                        "his own experience, observations, and actions on the"
-                        " day of the accident"
+                        "any of his own experience, observations, and actions"
+                        " on the day of the accident, anything related to him"
+                        " on that day"
                     ),
                     knowledge=(
                         "In the morning you left your girlfriend's car, you"
@@ -439,6 +448,11 @@ scene = Scene(
                 f"You are the janitor of the {POWER_PLANT_NAME} power plant."
                 f" {VICTIM_SYSTEM_MESSAGE} Your name is {JANITOR_NAME}."
             ),
+            discover_requirement=(
+                "When the conversation reveals that the janitor"
+                f" {JANITOR_NAME} is last seen at the door of the reactor"
+                " control room"
+            ),
             knowledges=[
                 POWER_PLANT_FLOOR_PLAN_KNOWLEDGE,
                 Knowledge(
@@ -454,18 +468,19 @@ scene = Scene(
                         f" {OPERATOR_1_NAME} is the lead operator. You know"
                         f" {OPERATOR_2_NAME} and {OPERATOR_3_NAME} are good"
                         " friends and always arrive at the power plant"
-                        f" together. You know {SECURITY_NAME} is the security."
-                        " You know the powerplant has good security system"
-                        " but don't know any detail except that wireless"
-                        " signal is not allowed to go in or out of the"
-                        " powerplant."
+                        f" together. You know {SECURITY_NAME} is the security"
+                        " and she works in the security room. You know the"
+                        " powerplant has good security system but don't know"
+                        " any detail except that wireless signal is not"
+                        " allowed to go in or out of the powerplant."
                     ),
                 ),
                 Knowledge(
                     name="v5_experience_and_observations",
                     description=(
-                        "his own experience, observations, and actions on the"
-                        " day of the accident"
+                        "any of his own experience, observations, and actions"
+                        " on the day of the accident, anything related to him"
+                        " on that day"
                     ),
                     knowledge=(
                         "You signed in as usual. And then you start to clean"
@@ -501,6 +516,10 @@ scene = Scene(
                 f"You the security of the {POWER_PLANT_NAME} power plant."
                 f" {VICTIM_SYSTEM_MESSAGE} Your name is {SECURITY_NAME}."
             ),
+            discover_requirement=(
+                "When the conversation reveals that the security"
+                f" {SECURITY_NAME} is at the security room"
+            ),
             knowledges=[
                 POWER_PLANT_FLOOR_PLAN_KNOWLEDGE,
                 POWER_PLANT_REACTOR_CONTROL_ROOM_FLOOR_PLAN_KNOWLEDGE,
@@ -524,8 +543,9 @@ scene = Scene(
                 Knowledge(
                     name="v6_experience_and_observations",
                     description=(
-                        "her own experience, observations, and actions on the"
-                        " day of the accident"
+                        "any of her own experience, observations, and actions"
+                        " on the day of the accident, anything related to her"
+                        " on that day"
                     ),
                     knowledge=(
                         "You signed in as usual. Then you went to the"

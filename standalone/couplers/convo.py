@@ -241,7 +241,7 @@ class SceneNpcConvoCoupler(ConvoCoupler):
     logger: logging.Logger
     scene_system_message: str
     npc: SceneNpc
-    # TODO: Add discovered
+    discovered: bool
     knowledge_selection_token_used: int
 
     def __init__(self, system_message: str, npc: SceneNpc):
@@ -255,7 +255,11 @@ class SceneNpcConvoCoupler(ConvoCoupler):
 
         self.scene_system_message = system_message
         self.npc = npc
+        self.discovered = False
         self.knowledge_selection_token_used = 0
+
+        if self.npc.discover_requirement is None:
+            self.discovered = True
 
         self.logger.info(f"SceneNpcConvoCoupler for {npc.id} created")
 
@@ -285,8 +289,6 @@ class SceneNpcConvoCoupler(ConvoCoupler):
 
         extra_knowledge = self.get_knowledge(messages)
         messages[0].content += f" {extra_knowledge}"
-
-        # TODO: Check if discovered using OpenAI API
 
         return messages
 
@@ -320,7 +322,8 @@ class SceneNpcConvoCoupler(ConvoCoupler):
             description=(
                 "Get the assistant's knowledge to use for responding the"
                 " user's message. The assistant and user refer to the"
-                " conversation messages in the JSON list."
+                " conversation messages in the JSON list. True if the"
+                " knowledge is needed, False otherwise."
             ),
             parameters=Parameters(
                 parameters={
@@ -371,5 +374,7 @@ class SceneNpcConvoCoupler(ConvoCoupler):
 
         # Get the knowledge
         return " ".join(
-            k.knowledge for k in self.npc.knowledges if arguments[k.name]
+            k.knowledge
+            for k in self.npc.knowledges
+            if k.name in arguments and arguments[k.name]
         )

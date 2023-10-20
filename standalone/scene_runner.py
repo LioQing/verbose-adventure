@@ -50,19 +50,38 @@ class SceneRunner:
             True if the user requests exiting, False otherwise.
         """
         print("Type the index of the NPC you want to talk to, or 0 to exit.")
-        for i, npc in enumerate(self.scene_coupler.get_npcs()):
+        npc_index_map = dict()
+
+        discovered_npc = []
+        for j, (npc, discovered) in enumerate(self.scene_coupler.get_npcs()):
+            if discovered:
+                discovered_npc.append((j, npc))
+
+        for i, (j, npc) in enumerate(discovered_npc):
+            npc_index_map[i + 1] = j
             print(f"{i + 1}. {npc.name:<10} - {npc.title}")
+
         print("0. Exit")
         user_input = self.get_user_input()
 
         try:
-            index = int(user_input) - 1
-            convo_coupler = self.scene.process_user_selection(index)
-            if convo_coupler is None:
+            index = int(user_input)
+            if index == 0:
                 return False
+
+            index = npc_index_map[index]
+            convo_coupler = self.scene.process_user_selection(index)
 
             adventure = Adventure(convo_coupler)
             adventure.user_flow()
+
+            discovered_indices = self.scene.process_npc_discovery(index)
+            npcs = [npc for (npc, _) in self.scene_coupler.get_npcs()]
+            for i in discovered_indices:
+                print(
+                    f"System: You discovered {npcs[i].name} - {npcs[i].title},"
+                    " you can now talk to them."
+                )
         except Exception as e:
             print(traceback.format_exc())
             print(f"Error: {e}")
