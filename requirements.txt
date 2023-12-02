@@ -4,6 +4,9 @@ annotated-types==0.5.0
 asgiref==3.7.2
 async-timeout==4.0.3
 attrs==23.1.0
+azure-common==1.1.28
+azure-core==1.29.5
+azure-search-documents==11.4.0
 certifi==2023.7.22
 cfgv==3.4.0
 charset-normalizer==3.2.0
@@ -20,6 +23,7 @@ frozenlist==1.4.0
 identify==2.5.29
 idna==3.4
 inflection==0.5.1
+isodate==0.6.1
 isort==5.10.1
 jsonschema==4.19.1
 jsonschema-specifications==2023.7.1
@@ -44,6 +48,7 @@ PyYAML==6.0.1
 referencing==0.30.2
 requests==2.31.0
 rpds-py==0.10.3
+six==1.16.0
 snowballstemmer==2.2.0
 sqlparse==0.4.4
 toml==0.10.2
